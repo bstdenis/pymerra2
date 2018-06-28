@@ -5,25 +5,21 @@ from calendar import monthrange
 import tempfile
 import shutil
 
+from . import __version__
+
 import numpy as np
 import numpy.ma as ma
 import netCDF4
 
-from merra2_variables import merra2_vars
-
-# Version, should be move to an __init__.py file if ever creating
-# a package out of this...
-__version__ = '0.1.2'
+from pymerra2.merra2_variables import merra2_vars
 
 # Aliases for default fill values
 defi2 = netCDF4.default_fillvals['i2']
 defi4 = netCDF4.default_fillvals['i4']
 deff4 = netCDF4.default_fillvals['f4']
 
-
 class NetCDFError(Exception):
     pass
-
 
 def _time_vectors_int(time_vectors, force=False, raise_exception=False,
                       allow_masked=True, dtype='int32'):

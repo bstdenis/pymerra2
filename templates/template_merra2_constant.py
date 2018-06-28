@@ -1,5 +1,5 @@
 import os
-import merra2
+from pymerra2 import merra2
 
 # Need to download the constant files on disk from 
 # https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2_MONTHLY/

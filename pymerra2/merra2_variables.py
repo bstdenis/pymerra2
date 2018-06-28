@@ -49,7 +49,7 @@ merra2_vars = {
         'standard_name': 'convective_precipitation_flux',
         'cell_methods': 'time: mean'},
     'prbc': {
-	'esdt_dir': 'M2T1NXFLX.5.12.4',
+        'esdt_dir': 'M2T1NXFLX.5.12.4',
         'collection': 'tavg1_2d_flx_Nx',
         'merra_name': 'PRECTOTCORR',
         'standard_name': 'precipitation_flux_bias_corr',

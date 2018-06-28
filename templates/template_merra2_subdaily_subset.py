@@ -3,7 +3,7 @@ import shutil
 import glob
 import tempfile
 
-import merra2
+from pymerra2 import merra2
 
 # This assumes that for each year, every month is available and that the
 # subset files downloaded have the .SUB.nc4 suffix and are otherwise named

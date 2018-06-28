@@ -1,6 +1,6 @@
 from calendar import monthrange
 
-import merra2
+from pymerra2 import merra2
 
 # Here we process multiple variables at a time to avoid downloading
 # original data twice (all these variables are in the same files).
