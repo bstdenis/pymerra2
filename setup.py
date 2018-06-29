@@ -24,6 +24,7 @@ setup(
     description=about["__description__"],
     long_description=long_description,
     url=about["__url__"],
+    license=about["__license__"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
@@ -38,9 +39,9 @@ setup(
     ],
 
     # -- Package structure -------------------------------------------------
-    packages=find_packages(),
-
-    include_package_data=True,
+    packages=find_packages(exclude=['tests', 'templates']),
+    include_package_data=False,
+    package_data=None,
     install_requires=INSTALL_REQUIRES,
 
 )
