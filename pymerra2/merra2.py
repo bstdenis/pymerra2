@@ -9,7 +9,7 @@ import netCDF4
 import numpy as np
 import numpy.ma as ma
 
-from pymerra2.merra2_variables import merra2_vars
+from pymerra2.pymerra2_variables import pymerra2_vars
 from . import __version__
 
 # Aliases for default fill values
@@ -82,7 +82,7 @@ def fixed_netcdf(path_data, output_file, var_name, merra2_var_dict=None):
     """
 
     if not merra2_var_dict:
-        merra2_var_dict = merra2_vars[var_name]
+        merra2_var_dict = pymerra2_vars[var_name]
 
     search_str = "*{0}*.nc4".format(merra2_var_dict['collection'])
     nc_files = glob.glob(os.path.join(path_data, search_str))
@@ -253,7 +253,7 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
     var_name : str
     initial_year : int
     final_year : int
-    merra2_var_dict : dict
+    merra2_var_dict : dict or None
         Dictionary containing the following keys:
         esdt_dir, collection, merra_name, standard_name,
         see the Bosilovich paper for details.
@@ -262,7 +262,7 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
     """
 
     if not merra2_var_dict:
-        merra2_var_dict = merra2_vars[var_name]
+        merra2_var_dict = pymerra2_vars[var_name]
 
     search_str = "*{0}*.nc4".format(merra2_var_dict['collection'])
     nc_files = glob.glob(os.path.join(path_data, search_str))
@@ -499,7 +499,7 @@ def subdaily_download_and_convert(merra2_server, var_names, initial_year,
         Must contain trailing slash.
         e.g. https://goldsmr4.gesdisc.eosdis.nasa.gov/data/
     var_names : list of string
-        Variable short names, must be defined in merra2_variables.py
+        Variable short names, must be defined in pymerra2_variables.py
         if merra2_var_dict is not provided. If more than one variable,
         they are assumed to have the same original files and those will only
         be downloaded once.
@@ -509,7 +509,7 @@ def subdaily_download_and_convert(merra2_server, var_names, initial_year,
     final_month : int
     initial_day : int
     final_day : int
-    merra2_var_dicts : list of dict
+    merra2_var_dicts : list of dict or None
         Dictionary containing the following keys:
         esdt_dir, collection, merra_name, standard_name,
         see the Bosilovich paper for details. Same order as var_names.
@@ -525,7 +525,7 @@ def subdaily_download_and_convert(merra2_server, var_names, initial_year,
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
     for i, var_name in enumerate(var_names):
         if not merra2_var_dicts:
-            merra2_var_dict = merra2_vars[var_name]
+            merra2_var_dict = pymerra2_vars[var_name]
         else:
             merra2_var_dict = merra2_var_dicts[i]
         # Download subdaily files
@@ -574,7 +574,7 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
     var_name : str
     initial_year : int
     final_year : int
-    merra2_var_dict : dict
+    merra2_var_dict : dict or None
         Dictionary containing the following keys:
         esdt_dir, collection, merra_name, standard_name,
         see the Bosilovich paper for details.
@@ -589,7 +589,7 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
     """
 
     if not merra2_var_dict:
-        merra2_var_dict = merra2_vars[var_name]
+        merra2_var_dict = pymerra2_vars[var_name]
 
     search_str = "*{0}*.nc4".format(merra2_var_dict['collection'])
     nc_files = glob.glob(os.path.join(path_data, search_str))
@@ -780,7 +780,7 @@ def daily_download_and_convert(merra2_server, var_names, initial_year,
         Must contain trailing slash.
         e.g. https://goldsmr4.gesdisc.eosdis.nasa.gov/data/
     var_names : list of string
-        Variable short names, must be defined in merra2_variables.py
+        Variable short names, must be defined in pymerra2_variables.py
         if merra2_var_dict is not provided. If more than one variable,
         they are assumed to have the same original files and those will only
         be downloaded once.
@@ -789,8 +789,8 @@ def daily_download_and_convert(merra2_server, var_names, initial_year,
     initial_month : int
     final_month : int
     initial_day : int
-    final_day : int
-    merra2_var_dicts : list of dict
+    final_day : int or None
+    merra2_var_dicts : list of dict or None
         Dictionary containing the following keys:
         esdt_dir, collection, merra_name, standard_name,
         see the Bosilovich paper for details. Same order as var_names.
@@ -810,7 +810,7 @@ def daily_download_and_convert(merra2_server, var_names, initial_year,
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
     for i, var_name in enumerate(var_names):
         if not merra2_var_dicts:
-            merra2_var_dict = merra2_vars[var_name]
+            merra2_var_dict = pymerra2_vars[var_name]
         else:
             merra2_var_dict = merra2_var_dicts[i]
         # Download subdaily files

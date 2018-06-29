@@ -1,5 +1,2 @@
-from .context import pymerra2
-
-
 if __name__ == "__main__":
     pass

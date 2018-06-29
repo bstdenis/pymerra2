@@ -5,7 +5,7 @@ from pymerra2 import merra2
 # Here we process multiple variables at a time to avoid downloading
 # original data twice (all these variables are in the same files).
 # These variables names are user choices, their merra-2 equivalent are
-# specified below or in the default merra2_variables.py
+# specified below or in the default pymerra2_variables.py
 var_names = ['hur']
 # Frequency of the given variables (1hr, 3hr, 6hr)
 time_frequency = '3hr'
@@ -20,7 +20,7 @@ merra2_server = 'https://goldsmr5.sci.gsfc.nasa.gov/data/'
 # standard_name comes from
 # http://cfconventions.org/standard-names.html
 # Optionally, if all the variables are already in the default
-# merra2_variables.py, this can be set to None.
+# pymerra2_variables.py, this can be set to None.
 merra2_var_dicts = [{'esdt_dir': 'M2T3NPCLD.5.12.4',
                      'collection': 'tavg3_3d_cld_Np',
                      'merra_name': 'RH',

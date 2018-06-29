@@ -3,7 +3,7 @@ from pymerra2 import merra2
 # Here we process multiple variables at a time to avoid downloading the
 # original data twice (all these variables are in the same files).
 # These variables names are user choices, their merra-2 equivalent are
-# specified below or in the default merra2_variables.py
+# specified below or in the default pymerra2_variables.py
 var_names = ['tasmin', 'tasmax','prmax']
 delete_temp_dir = True
 download_dir = '/path/to/output'
@@ -16,7 +16,7 @@ merra2_server = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/data/'
 # standard_name comes from
 # http://cfconventions.org/standard-names.html
 # Optionally, if all the variables are already in the default
-# merra2_variables.py, this can be set to None.
+# pymerra2_variables.py, this can be set to None.
 merra2_var_dicts = [{'esdt_dir': 'M2SDNXSLV.5.12.4',
                      'collection': 'statD_2d_slv_Nx',
                      'merra_name': 'T2MMAX',

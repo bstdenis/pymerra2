@@ -1,4 +1,5 @@
 import os
+
 from pymerra2 import merra2
 
 # Need to download the constant files on disk from 
@@ -7,7 +8,7 @@ path_data = '/path/to/constant_files'
 output_path = '/path/to/output'
 
 # These variables names are user choices, their merra-2 equivalent are
-# specified below or in the default merra2_variables.py
+# specified below or in the default pymerra2_variables.py
 var_names = ['phis', 'sftgif', 'sftlf', 'sftof']
 
 # The variables specification is in the same order as var_names above.
@@ -17,7 +18,7 @@ var_names = ['phis', 'sftgif', 'sftlf', 'sftof']
 # standard_name comes from
 # http://cfconventions.org/standard-names.html
 # Optionally, if all the variables are already in the default
-# merra2_variables.py, this can be set to None.
+# pymerra2_variables.py, this can be set to None.
 merra2_var_dicts = [{'esdt_dir': 'M2C0NXASM.5.12.4',
                      'collection': 'const_2d_asm_Nx',
                      'merra_name': 'PHIS',

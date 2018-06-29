@@ -1,6 +1,6 @@
+import glob
 import os
 import shutil
-import glob
 import tempfile
 
 from pymerra2 import merra2
@@ -19,7 +19,7 @@ year_fin = 2017
 var_name = 'tas'  # This is not the merra2 variable name, see var_info below.
 freq = '1hr'
 
-# Look at merra2_variables.py for examples of that this should be:
+# Look at pymerra2_variables.py for examples of that this should be:
 var_info = {'cell_methods': None,
             'collection': 'inst1_2d_asm_Nx',
             'esdt_dir': None,  # Not required here...
