@@ -1,34 +1,30 @@
 from __future__ import print_function
 
 import os
-from codecs import open
-
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    print("Command line script will not be created.")
-    from distutils.core import setup
+import codecs
+from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
 
-with open("README.md", "r") as fh:
+with codecs.open("README.md", "r") as fh:
     long_description = fh.read()
 
-with open(os.path.join(here, 'pymerra2', '__version__.py'), 'r', 'utf-8') as f:
+with codecs.open(os.path.join(here, 'pymerra2', '__init__.py'), 'r', 'utf-8') as f:
     exec(f.read(), about)
 
+INSTALL_REQUIRES = [line.strip() for line in open('requirements.txt')]
+
 setup(
+    # -- meta information --------------------------------------------------
     name=about["__title__"],
     version=about["__version__"],
     author=about["__author__"],
     author_email=about["__author_email__"],
     description=about["__description__"],
     long_description=long_description,
-    # long_description_content_type='text/markdown',
     url=about["__url__"],
-    packages=find_packages(),
-    classifiers=(
+    classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
@@ -39,5 +35,12 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Topic :: Scientific/Engineering :: Atmospheric Science",
-    ),
+    ],
+
+    # -- Package structure -------------------------------------------------
+    packages=find_packages(),
+
+    include_package_data=True,
+    install_requires=INSTALL_REQUIRES,
+
 )

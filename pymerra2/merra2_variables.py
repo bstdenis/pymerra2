@@ -154,4 +154,5 @@ merra2_vars = {
         'merra_name': 'V10M',
         'standard_name': 'northward_wind',
         'cell_methods': None,
-        'least_significant_digit': 3}}
+        'least_significant_digit': 3}
+}

@@ -1,25 +1,26 @@
-import os
-import glob
 import datetime
-from calendar import monthrange
-import tempfile
+import glob
+import os
 import shutil
+import tempfile
+from calendar import monthrange
 
-from . import __version__
-
+import netCDF4
 import numpy as np
 import numpy.ma as ma
-import netCDF4
 
 from pymerra2.merra2_variables import merra2_vars
+from . import __version__
 
 # Aliases for default fill values
 defi2 = netCDF4.default_fillvals['i2']
 defi4 = netCDF4.default_fillvals['i4']
 deff4 = netCDF4.default_fillvals['f4']
 
+
 class NetCDFError(Exception):
     pass
+
 
 def _time_vectors_int(time_vectors, force=False, raise_exception=False,
                       allow_masked=True, dtype='int32'):
@@ -167,7 +168,7 @@ def fixed_netcdf(path_data, output_file, var_name, merra2_var_dict=None):
     # 3.3. Standard Name
     var1.standard_name = merra2_var_dict['standard_name']
     var_ref = nc_reference.variables[merra2_var_dict['merra_name']]
-    var1[:,:] = var_ref[0,:,:]
+    var1[:, :] = var_ref[0, :, :]
 
     nc_reference.close()
     nc1.close()
@@ -461,24 +462,24 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
                 nctime_1980 = np.round(
                     netCDF4.date2num(ncdatetime, time.units))
             if 'lev' in nc_reference.dimensions:
-                tmp_data[ttmp:ttmp + ncvar.shape[0],:,:,:] = ncvar[:,:,:,:]
+                tmp_data[ttmp:ttmp + ncvar.shape[0], :, :, :] = ncvar[:, :, :, :]
             else:
-                tmp_data[ttmp:ttmp + ncvar.shape[0],:,:] = ncvar[:,:,:]
+                tmp_data[ttmp:ttmp + ncvar.shape[0], :, :] = ncvar[:, :, ]
             tmp_time[ttmp:ttmp + ncvar.shape[0]] = nctime_1980[:]
             ttmp += ncvar.shape[0]
             nc.close()
         if 'lev' in nc_reference.dimensions:
-            var1[t:t + tmp_data.shape[0],:,:,:] = tmp_data[:,:,:,:]
+            var1[t:t + tmp_data.shape[0], :, :, :] = tmp_data[:, :, :, :]
         else:
-            var1[t:t + tmp_data.shape[0],:,:] = tmp_data[:,:,:]
+            var1[t:t + tmp_data.shape[0], :, :] = tmp_data[:, :, :]
         time[t:t + tmp_data.shape[0]] = tmp_time[:]
         if merra2_var_dict['cell_methods']:
             if tmp_time[1] - tmp_time[0] == 1.0:
-                tbounds[t:t + tmp_data.shape[0],0] = tmp_time[:] - 0.5
-                tbounds[t:t + tmp_data.shape[0],1] = tmp_time[:] + 0.5
+                tbounds[t:t + tmp_data.shape[0], 0] = tmp_time[:] - 0.5
+                tbounds[t:t + tmp_data.shape[0], 1] = tmp_time[:] + 0.5
             elif tmp_time[1] - tmp_time[0] == 3.0:
-                tbounds[t:t + tmp_data.shape[0],0] = tmp_time[:] - 1.5
-                tbounds[t:t + tmp_data.shape[0],1] = tmp_time[:] + 1.5
+                tbounds[t:t + tmp_data.shape[0], 0] = tmp_time[:] - 1.5
+                tbounds[t:t + tmp_data.shape[0], 1] = tmp_time[:] + 1.5
         t += tmp_data.shape[0]
 
     nc1.close()
@@ -515,6 +516,7 @@ def subdaily_download_and_convert(merra2_server, var_names, initial_year,
     output_dir : string
     delete_temp_dir : bool
     verbose : bool
+    time_frequency : string
 
     """
 
@@ -751,15 +753,15 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
             nctime = nc.variables['time']
             ncdatetime = netCDF4.num2date(nctime[:], nctime.units)
             nctime_1980 = np.round(netCDF4.date2num(ncdatetime, time.units))
-            tmp_data[ttmp:ttmp + ncvar.shape[0],:,:] = ncvar[:,:,:]
+            tmp_data[ttmp:ttmp + ncvar.shape[0], :, :] = ncvar[:, :, :]
             tmp_time[ttmp:ttmp + ncvar.shape[0]] = nctime_1980[:]
             ttmp += ncvar.shape[0]
             nc.close()
-        var1[t:t + tmp_data.shape[0],:,:] = tmp_data[:,:,:]
+        var1[t:t + tmp_data.shape[0], :, :] = tmp_data[:, :, :]
         time[t:t + tmp_data.shape[0]] = tmp_time[:]
         if merra2_var_dict['cell_methods']:
-            tbounds[t:t + tmp_data.shape[0],0] = tmp_time[:] - 12
-            tbounds[t:t + tmp_data.shape[0],1] = tmp_time[:] + 12
+            tbounds[t:t + tmp_data.shape[0], 0] = tmp_time[:] - 12
+            tbounds[t:t + tmp_data.shape[0], 1] = tmp_time[:] + 12
         t += tmp_data.shape[0]
 
     nc1.close()
@@ -820,7 +822,7 @@ def daily_download_and_convert(merra2_server, var_names, initial_year,
                 initial_day=initial_day, final_day=final_day,
                 output_directory=temp_dir_download)
         # Name the output file
-        if (initial_year == final_year):
+        if initial_year == final_year:
             file_name_str = "{0}_day_merra2_reanalysis_{1}.nc"
             out_file_name = file_name_str.format(var_name, str(initial_year))
         else:
