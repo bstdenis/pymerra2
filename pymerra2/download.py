@@ -9,7 +9,7 @@ import netCDF4
 import numpy as np
 import numpy.ma as ma
 
-from pymerra2.pymerra2_variables import pymerra2_vars
+from pymerra2.variables import var_list
 from . import __version__
 
 # Aliases for default fill values
@@ -82,7 +82,7 @@ def fixed_netcdf(path_data, output_file, var_name, merra2_var_dict=None):
     """
 
     if not merra2_var_dict:
-        merra2_var_dict = pymerra2_vars[var_name]
+        merra2_var_dict = var_list[var_name]
 
     search_str = "*{0}*.nc4".format(merra2_var_dict['collection'])
     nc_files = glob.glob(os.path.join(path_data, search_str))
@@ -262,7 +262,7 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
     """
 
     if not merra2_var_dict:
-        merra2_var_dict = pymerra2_vars[var_name]
+        merra2_var_dict = var_list[var_name]
 
     search_str = "*{0}*.nc4".format(merra2_var_dict['collection'])
     nc_files = glob.glob(os.path.join(path_data, search_str))
@@ -525,7 +525,7 @@ def subdaily_download_and_convert(merra2_server, var_names, initial_year,
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
     for i, var_name in enumerate(var_names):
         if not merra2_var_dicts:
-            merra2_var_dict = pymerra2_vars[var_name]
+            merra2_var_dict = var_list[var_name]
         else:
             merra2_var_dict = merra2_var_dicts[i]
         # Download subdaily files
@@ -589,7 +589,7 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
     """
 
     if not merra2_var_dict:
-        merra2_var_dict = pymerra2_vars[var_name]
+        merra2_var_dict = var_list[var_name]
 
     search_str = "*{0}*.nc4".format(merra2_var_dict['collection'])
     nc_files = glob.glob(os.path.join(path_data, search_str))
@@ -810,7 +810,7 @@ def daily_download_and_convert(merra2_server, var_names, initial_year,
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
     for i, var_name in enumerate(var_names):
         if not merra2_var_dicts:
-            merra2_var_dict = pymerra2_vars[var_name]
+            merra2_var_dict = var_list[var_name]
         else:
             merra2_var_dict = merra2_var_dicts[i]
         # Download subdaily files

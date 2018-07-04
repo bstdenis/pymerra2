@@ -2,7 +2,7 @@
 # https://goldsmr4.gesdisc.eosdis.nasa.gov/data/
 # https://goldsmr5.sci.gsfc.nasa.gov/data/
 
-pymerra2_vars = {
+var_list = {
     'dewpt': {
         'esdt_dir': 'M2T1NXSLV.5.12.4',
         'collection': 'tavg1_2d_slv_Nx',

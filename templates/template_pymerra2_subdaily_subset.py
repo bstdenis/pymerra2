@@ -3,7 +3,7 @@ import os
 import shutil
 import tempfile
 
-from pymerra2 import merra2
+from pymerra2 import download
 
 # This assumes that for each year, every month is available and that the
 # subset files downloaded have the .SUB.nc4 suffix and are otherwise named
@@ -41,7 +41,7 @@ for yyyy in range(year_ini, year_fin + 1):
 
         output_file = output_file_template.format(
             var_name, freq, str(yyyy), str(mm).zfill(2))
-        merra2.subdaily_netcdf(
+        download.subdaily_netcdf(
             path_tmp, os.path.join(path_output, output_file), var_name,
             yyyy, yyyy, var_info, True)
 

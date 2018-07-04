@@ -1,6 +1,6 @@
 import os
 
-from pymerra2 import merra2
+from pymerra2 import download
 
 # Need to download the constant files on disk from 
 # https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2_MONTHLY/
@@ -47,5 +47,5 @@ for i, var_name in enumerate(var_names):
         merra2_var_dict = merra2_var_dicts[i]
     else:
         merra2_var_dict = None
-    merra2.fixed_netcdf(
+    download.fixed_netcdf(
         path_data, output_file, var_name, merra2_var_dict=merra2_var_dict)

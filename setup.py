@@ -1,7 +1,8 @@
 from __future__ import print_function
 
-import os
 import codecs
+import os
+
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -15,6 +16,8 @@ with codecs.open(os.path.join(here, 'pymerra2', '__init__.py'), 'r', 'utf-8') as
 
 INSTALL_REQUIRES = [line.strip() for line in open('requirements.txt')]
 
+KEYWORDS = "nasa merra2 netcdf climate forecast"
+
 setup(
     # -- meta information --------------------------------------------------
     name=about["__title__"],
@@ -25,23 +28,29 @@ setup(
     long_description=long_description,
     url=about["__url__"],
     license=about["__license__"],
+    platforms="all",
     classifiers=[
+        "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.6"
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Scientific/Engineering :: Atmospheric Science",
     ],
+    keywords=KEYWORDS,
 
     # -- Package structure -------------------------------------------------
+
     packages=find_packages(exclude=['tests', 'templates']),
-    include_package_data=False,
-    package_data=None,
-    install_requires=INSTALL_REQUIRES,
+    include_package_data=None,
+    python_requires='>=2.6, !=3.0.*, !=3.1.*, !=3.2.*, <4',
+    install_requires=INSTALL_REQUIRES
 
 )

@@ -1,4 +1,4 @@
-from pymerra2 import merra2
+from pymerra2 import download
 
 # Here we process multiple variables at a time to avoid downloading the
 # original data twice (all these variables are in the same files).
@@ -35,7 +35,7 @@ merra2_var_dicts = [{'esdt_dir': 'M2SDNXSLV.5.12.4',
 
 # This loop will create annual files of daily MERRA2 data
 for yyyy in range(1980, 2017):
-    merra2.daily_download_and_convert(
+    download.daily_download_and_convert(
         merra2_server, var_names, merra2_var_dicts=None, initial_year=yyyy,
         final_year=yyyy, initial_month=1, final_month=12, initial_day=1,
         final_day=None, output_dir=download_dir,
