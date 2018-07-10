@@ -10,7 +10,7 @@ import numpy as np
 import numpy.ma as ma
 
 from pymerra2.variables import var_list
-from . import __version__
+from pymerra2 import __version__
 
 # Aliases for default fill values
 defi2 = netCDF4.default_fillvals['i2']
@@ -20,6 +20,13 @@ deff4 = netCDF4.default_fillvals['f4']
 
 class NetCDFError(Exception):
     pass
+
+# TODO Integrate more opportunities for tests and simplify function calls
+# TODO Create a class for data requests that can be passed to functions rather than script calls.
+# TODO Refactor keywords and variables to remove ambiguity/confusion
+# TODO Split functions between downloads and subsets
+# TODO Integrate data downloads methods for similar data access types (Not just MERRA/MERRA2)
+# TODO Write docstrings for ALL methods and classes from now on
 
 
 def _time_vectors_int(time_vectors, force=False, raise_exception=False,
@@ -128,6 +135,7 @@ def fixed_netcdf(path_data, output_file, var_name, merra2_var_dict=None):
     nc1.createDimension('lat', len(nc_reference.dimensions['lat']))
     nc1.createDimension('lon', len(nc_reference.dimensions['lon']))
 
+    # TODO Remove these unused comments from source code to somewhere else?
     # Create netCDF variables
     # Compression parameters include:
     # zlib=True,complevel=9,least_significant_digit=1
@@ -203,6 +211,8 @@ def subdaily_download(merra2_server, dataset_esdt, merra2_collection,
         add_output_dir = ''
     else:
         add_output_dir = "--directory-prefix={0} ".format(output_directory)
+
+    # TODO replace this system call with a python wget approach
     merra_cmd = ("wget -c {0}--load-cookies ~/.urs_cookies "
                  "--save-cookies ~/.urs_cookies --keep-session-cookies {1}")
     merra_cmd = merra_cmd.format(add_output_dir, merra2_server)
@@ -239,6 +249,7 @@ def subdaily_download(merra2_server, dataset_esdt, merra2_collection,
                 cdp = data_path.format(str(yyyy), str(mm).zfill(2),
                                        str(dd).zfill(2), merra_stream,
                                        dataset_esdt, merra2_collection)
+                # TODO Get rid of these system call and implement error handling earlier
                 os.system(merra_cmd + cdp)
 
 
@@ -320,6 +331,7 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
     nc1.institution = nc_reference.Institution
     nc1.source = 'Reanalysis'
     nc1.references = nc_reference.References
+
     # Using lower case c for conventions because lower() is used below...
     attr_overwrite = ['conventions', 'title', 'institution', 'source',
                       'references']
@@ -344,6 +356,7 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
     if merra2_var_dict['cell_methods']:
         nc1.createDimension('nv', 2)
 
+    # TODO Remove these unused comments from source code to somewhere else?
     # Create netCDF variables
     # Compression parameters include:
     # zlib=True,complevel=9,least_significant_digit=1
@@ -376,6 +389,7 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
         time.bounds = 'time_bnds'
         tbounds = nc1.createVariable('time_bnds', 'f4', ('time', 'nv'))
 
+    # TODO Remove these unused comments from source code to somewhere else?
     # time_vectors = nc1.createVariable('time_vectors', 'i2', ('time', 'ts'),
     #                                   zlib=True)
 
@@ -647,6 +661,7 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
     nc1.institution = nc_reference.Institution
     nc1.source = 'Reanalysis'
     nc1.references = nc_reference.References
+
     # Using lower case c for conventions because lower() is used below...
     attr_overwrite = ['conventions', 'title', 'institution', 'source',
                       'references']
@@ -670,6 +685,7 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
     if merra2_var_dict['cell_methods']:
         nc1.createDimension('nv', 2)
 
+    # TODO Remove these unused comments from source code to somewhere else?
     # Create netCDF variables
     # Compression parameters include:
     # zlib=True,complevel=9,least_significant_digit=1
@@ -699,6 +715,7 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
         time.bounds = 'time_bnds'
         tbounds = nc1.createVariable('time_bnds', 'i4', ('time', 'nv'))
 
+    # TODO Remove these unused comments from source code to somewhere else?
     # 4.3. Vertical (Height or Depth) Coordinate
     # level = nc1.createVariable('level','f4',('level',),zlib=True)
     # level.axis = 'Z'
