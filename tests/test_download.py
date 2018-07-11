@@ -4,9 +4,13 @@
 # import shutil
 # import sys
 # import tempfile
-#
 # import pymerra2.download
 #
+
+# TODO: Figure out a reasonable way to test download capabilities?
+# TODO: Split tests that perform subsetting with those that perform downloading
+# TODO: Add an example MERRA2 dataset to perfrom conversions on?
+
 #
 # def test_daily_download_convert():
 #     var_names = ['tasmin', 'tasmax', 'prmax']
