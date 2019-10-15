@@ -8,6 +8,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+
 import netCDF4
 import numpy as np
 import numpy.ma as ma
@@ -50,6 +51,7 @@ def _time_vectors_int(time_vectors, force=False, raise_exception=False,
 
 
 def _datetimes_to_time_vectors(datetimes: Union[datetime.datetime, List[datetime.datetime]]):
+
     """Convert list of datetimes to Nx6 matrix.
 
     Parameters
@@ -254,7 +256,6 @@ def subdaily_download(merra2_server: str, dataset_esdt: str, merra2_collection: 
                 cdp = data_path.format(str(yyyy), str(mm).zfill(2),
                                        str(dd).zfill(2), merra_stream,
                                        dataset_esdt, merra2_collection)
-
                 subprocess.call(["wget", "-c", add_output_dir, "--load-cookies", "~/.urs_cookies",
                                  "--save-cookies", "~/.urs_cookies", "--keep-session-cookies", merra2_server, cdp[0],
                                  cdp[1]])
@@ -510,7 +511,6 @@ def subdaily_download_and_convert(merra2_server: str, var_names: List[str], init
                                   final_year: int, initial_month: int = 1, final_month: int = 12,
                                   initial_day: int = 1, final_day: Optional[int] = None,
                                   merra2_var_dicts: Optional[List[dict]] = None, output_dir: Union[str, Path] = None,
-                                  delete_temp_dir: bool = True, verbose: bool = True,
                                   time_frequency='1hr'):
     """MERRA2 subdaily download and conversion.
 
@@ -646,7 +646,7 @@ def daily_netcdf(path_data: Union[str, Path], output_file: Union[str, Path], var
     var_ref = nc_reference.variables[merra2_var_dict['merra_name']]
 
     # 2.1 Filename
-    # NetCDF files should have the file name extension ".nc".
+    #     NetCDF files should have the file name extension ".nc".
     nc_file = output_file
 
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
