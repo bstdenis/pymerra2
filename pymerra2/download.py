@@ -94,7 +94,7 @@ def fixed_netcdf(
     path_data : Union[str, Path]
     output_file : Union[str, Path]
     var_name : str
-    merra2_var_dict : dict
+    merra2_var_dict : Optional[dict]
         Dictionary containing the following keys:
         esdt_dir, collection, merra_name, standard_name,
         see the Bosilovich paper for details.
