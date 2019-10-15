@@ -14,5 +14,5 @@ def test_variables():
     assert type(pm2.variables.var_list) == dict
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
