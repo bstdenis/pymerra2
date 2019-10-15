@@ -5,6 +5,7 @@ def test_version_definition():
     version = pm2.__version__
     assert version >= 0.2
 
+
 def test_modules():
     pass
 
