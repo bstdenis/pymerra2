@@ -21,6 +21,10 @@ defi2 = netCDF4.default_fillvals["i2"]
 defi4 = netCDF4.default_fillvals["i4"]
 deff4 = netCDF4.default_fillvals["f4"]
 
+KiB = 2 ** 10
+MiB = 2 ** 20
+GiB = 2 ** 30
+
 
 class NetCDFError(Exception):
     pass
@@ -54,7 +58,6 @@ def _time_vectors_int(
 def _datetimes_to_time_vectors(
         datetimes: Union[datetime.datetime, List[datetime.datetime]]
 ):
-
     """Convert list of datetimes to Nx6 matrix.
 
     Parameters
@@ -235,7 +238,7 @@ def subdaily_download(
     if output_directory is None:
         add_output_dir = ""
     else:
-        add_output_dir = "--directory-prefix={0} ".format(output_directory)
+        add_output_dir = "--directory-prefix={0}".format(output_directory)
 
     # merra_cmd = ("wget -c {0}--load-cookies ~/.urs_cookies "
     #              "--save-cookies ~/.urs_cookies --keep-session-cookies {1}")
@@ -338,11 +341,11 @@ def subdaily_netcdf(
             relevant_files.append(nc_file)
             nc = netCDF4.Dataset(nc_file, "r")
             ncvar = nc.variables[merra2_var_dict["merra_name"]]
-            nmb += (ncvar.size * 4) / (1024.0 * 1024.0)
-            if nmb > 500:
+            nmb += (ncvar.size * 4) / MiB
+            if nmb > 512:
                 divided_files.append([nc_file])
                 nt_division.append(0)
-                nmb = (ncvar.size * 4) / (1024.0 * 1024.0)
+                nmb = (ncvar.size * 4) / MiB
             else:
                 divided_files[-1].append(nc_file)
             nt_division[-1] += len(nc.dimensions["time"])
@@ -429,11 +432,11 @@ def subdaily_netcdf(
     time.units = "hours since 1980-01-01 00:00:00"
     time.long_name = "time"
     time.standard_name = "time"
-    # 4.4.1. Calendar
     time.calendar = "gregorian"
 
     if merra2_var_dict["cell_methods"]:
-        time.bounds = "time_bnds"
+        # TODO: This breaks time. Caveat emptor.
+        # time.bounds = "time_bnds"
         tbounds = nc1.createVariable("time_bnds", "f4", ("time", "nv"))
 
     # time_vectors = nc1.createVariable('time_vectors', 'i2', ('time', 'ts'),
@@ -544,6 +547,7 @@ def subdaily_netcdf(
             var1[t: t + tmp_data.shape[0], :, :] = tmp_data[:, :, :]
         time[t: t + tmp_data.shape[0]] = tmp_time[:]
         if merra2_var_dict["cell_methods"]:
+            # TODO: There is something not working here. 29 Oct 2019.
             if tmp_time[1] - tmp_time[0] == 1.0:
                 tbounds[t: t + tmp_data.shape[0], 0] = tmp_time[:] - 0.5
                 tbounds[t: t + tmp_data.shape[0], 1] = tmp_time[:] + 0.5
@@ -720,11 +724,11 @@ def daily_netcdf(
             relevant_files.append(nc_file)
             nc = netCDF4.Dataset(nc_file, "r")
             ncvar = nc.variables[merra2_var_dict["merra_name"]]
-            nmb += (ncvar.size * 4) / (1024.0 * 1024.0)
-            if nmb > 500:
+            nmb += (ncvar.size * 4) / MiB
+            if nmb > 512:
                 divided_files.append([nc_file])
                 nt_division.append(0)
-                nmb = (ncvar.size * 4) / (1024.0 * 1024.0)
+                nmb = (ncvar.size * 4) / MiB
             else:
                 divided_files[-1].append(nc_file)
             nt_division[-1] += len(nc.dimensions["time"])
@@ -807,7 +811,6 @@ def daily_netcdf(
     time.units = "hours since 1980-01-01 00:00:00"
     time.long_name = "time"
     time.standard_name = "time"
-    # 4.4.1. Calendar
     time.calendar = "gregorian"
 
     if merra2_var_dict["cell_methods"]:

@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 
 from pymerra2 import download
@@ -12,7 +11,6 @@ var_names = ["pr", "prsn", "prc"]
 time_frequency = "1hr"
 delete_temp_dir = False
 download_dir = Path.cwd().joinpath("downloaded")
-download_dir.mkdir(exist_ok=True)
 merra2_server = "https://goldsmr4.gesdisc.eosdis.nasa.gov/data/"
 
 # The variables specification is in the same order as var_names above.
@@ -23,49 +21,36 @@ merra2_server = "https://goldsmr4.gesdisc.eosdis.nasa.gov/data/"
 # http://cfconventions.org/standard-names.html
 # Optionally, if all the variables are already in the default
 # pymerra2_variables.py, this can be set to None.
-merra2_var_dicts = [
-    {
-        "esdt_dir": "M2T1NXFLX.5.12.4",
-        "collection": "tavg1_2d_flx_Nx",
-        "merra_name": "PRECTOT",
-        "standard_name": "precipitation_flux",
-        "cell_methods": "time: mean",
-    },
-    {
-        "esdt_dir": "M2T1NXFLX.5.12.4",
-        "collection": "tavg1_2d_flx_Nx",
-        "merra_name": "PRECSNO",
-        "standard_name": "snowfall_flux",
-        "cell_methods": "time: mean",
-    },
-    {
-        "esdt_dir": "M2T1NXFLX.5.12.4",
-        "collection": "tavg1_2d_flx_Nx",
-        "merra_name": "PRECCON",
-        "standard_name": "convective_precipitation_flux",
-        "cell_methods": "time: mean",
-    },
-]
 
 # This loop will create monthly files of hourly MERRA2 data
-for yyyy in range(2017, 2020):
-    for mm in range(1, 13):
-        try:
-            download.subdaily_download_and_convert(
-                merra2_server,
-                var_names,
-                merra2_var_dicts=merra2_var_dicts,
-                initial_year=yyyy,
-                final_year=yyyy,
-                initial_month=mm,
-                final_month=mm,
-                initial_day=1,
-                final_day=None,
-                output_dir=download_dir,
-                delete_temp_dir=delete_temp_dir,
-                time_frequency=time_frequency,
-            )
-        except Exception as e:
-            msg = "{}: File not found".format(e)
-            logging.error(msg)
-            continue
+# for yyyy in range(2017, 2018):
+#     for mm in range(1, 2):
+#         try:
+#             download.subdaily_download_and_convert(
+#                 merra2_server,
+#                 var_names,
+#                 merra2_var_dicts=None,
+#                 initial_year=yyyy,
+#                 final_year=yyyy,
+#                 initial_month=mm,
+#                 final_month=mm,
+#                 initial_day=1,
+#                 final_day=None,
+#                 output_dir=download_dir,
+#                 delete_temp_dir=delete_temp_dir,
+#                 time_frequency=time_frequency,
+#             )
+#         except Exception as e:
+#             msg = "{}: File not found".format(e)
+#             logging.error(msg)
+#             continue
+
+
+download.subdaily_netcdf(
+    path_data=download_dir,
+    output_file="toto1.nc",
+    var_name="pr",
+    initial_year=2017,
+    final_year=2017,
+    merra2_var_dict=None,
+    verbose=False)
