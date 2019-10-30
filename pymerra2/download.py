@@ -33,7 +33,6 @@ class NetCDFError(Exception):
 # TODO: Integrate more opportunities for tests and simplify function calls
 # TODO: Create a class for data requests that can be passed to functions rather than script calls.
 # TODO: Refactor keywords and variables to remove ambiguity/confusion
-# TODO: Split functions between downloads and subsets
 # TODO: Integrate data downloads methods for similar data access types (Not just MERRA/MERRA2)
 # TODO: Write docstrings for ALL methods and classes from now on
 
