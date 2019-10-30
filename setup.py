@@ -11,7 +11,7 @@ about = dict(
     __url__='https://github.com/Ouranosinc/pymerra2',
     __author__='Trevor James Smith',
     __author_email__='smith.trevorj@ouranos.ca',
-    __license__='Apache 2.0',
+    __license__='Apache Software License 2.0',
     __copyright__='Copyright 2018 Ouranos Inc.'
 )
 
@@ -44,11 +44,9 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Topic :: Scientific/Engineering :: Atmospheric Science",
+        "Topic ::Utilities",
     ],
     keywords=KEYWORDS,
-
-    # -- Package structure -------------------------------------------------
-
     packages=find_packages(exclude=['tests', 'templates']),
     include_package_data=None,
     python_requires='>=2.6, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4',
