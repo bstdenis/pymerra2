@@ -433,6 +433,7 @@ def subdaily_netcdf(
     time.standard_name = "time"
     time.calendar = "gregorian"
 
+    tbounds = None
     if merra2_var_dict["cell_methods"]:
         # TODO: This breaks time. Caveat emptor.
         # time.bounds = "time_bnds"
@@ -604,6 +605,7 @@ def subdaily_download_and_convert(
         output_dir = Path(output_dir)
     if output_dir is None:
         output_dir = Path.cwd()
+    output_dir.mkdir(exist_ok=True)
 
     if (2, 7) < sys.version_info < (3, 6):
         output_dir = str(output_dir)
@@ -812,6 +814,7 @@ def daily_netcdf(
     time.standard_name = "time"
     time.calendar = "gregorian"
 
+    tbounds = None
     if merra2_var_dict["cell_methods"]:
         time.bounds = "time_bnds"
         tbounds = nc1.createVariable("time_bnds", "i4", ("time", "nv"))
