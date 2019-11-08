@@ -1,12 +1,12 @@
+import logging
 from pathlib import Path
-
 from pymerra2 import download
 
 # Here we process multiple variables at a time to avoid downloading
 # original data twice (all these variables are in the same files).
 # These variables names are user choices, their merra-2 equivalent are
 # specified below or in the default pymerra2_variables.py
-var_names = ["pr", "prsn", "prc"]
+var_names = ["evspsbl", "huss", "prbc", "tas", "sic", "snw", "uas", "vas", "ps"]
 # Frequency of the given variables (1hr, 3hr, 6hr)
 time_frequency = "1hr"
 delete_temp_dir = False
@@ -23,34 +23,33 @@ merra2_server = "https://goldsmr4.gesdisc.eosdis.nasa.gov/data/"
 # pymerra2_variables.py, this can be set to None.
 
 # This loop will create monthly files of hourly MERRA2 data
-# for yyyy in range(2017, 2018):
-#     for mm in range(1, 2):
-#         try:
-#             download.subdaily_download_and_convert(
-#                 merra2_server,
-#                 var_names,
-#                 merra2_var_dicts=None,
-#                 initial_year=yyyy,
-#                 final_year=yyyy,
-#                 initial_month=mm,
-#                 final_month=mm,
-#                 initial_day=1,
-#                 final_day=None,
-#                 output_dir=download_dir,
-#                 delete_temp_dir=delete_temp_dir,
-#                 time_frequency=time_frequency,
-#             )
-#         except Exception as e:
-#             msg = "{}: File not found".format(e)
-#             logging.error(msg)
-#             continue
+for yyyy in range(2017, 2019):
+    for mm in range(1, 13):
+        try:
+            download.subdaily_download_and_convert(
+                merra2_server,
+                var_names,
+                merra2_var_dicts=None,
+                initial_year=yyyy,
+                final_year=yyyy,
+                initial_month=mm,
+                final_month=mm,
+                initial_day=1,
+                final_day=None,
+                output_dir=download_dir,
+                delete_temp_dir=delete_temp_dir,
+                time_frequency=time_frequency,
+            )
+        except Exception as e:
+            msg = "{}: File not found".format(e)
+            logging.error(msg)
+            continue
 
 
-download.subdaily_netcdf(
-    path_data=download_dir,
-    output_file="toto1.nc",
-    var_name="pr",
-    initial_year=2017,
-    final_year=2017,
-    merra2_var_dict=None,
-    verbose=False)
+# download.subdaily_netcdf(
+#     path_data=download_dir,
+#     output_file="toto1.nc",
+#     var_name="pr",
+#     final_year=2017,
+#     merra2_var_dict=None,
+#     verbose=False)

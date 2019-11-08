@@ -1,5 +1,0 @@
-cftime
-netCDF4
-numpy
-pypandoc
-pytest

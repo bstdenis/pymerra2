@@ -285,9 +285,9 @@ def subdaily_download(
                         "-c",
                         add_output_dir,
                         "--load-cookies",
-                        "~/.urs_cookies",
+                        str(Path("~/.urs_cookies").expanduser()),
                         "--save-cookies",
-                        "~/.urs_cookies",
+                        str(Path("~/.urs_cookies").expanduser()),
                         "--keep-session-cookies",
                         merra2_server + cdp,
                     ]
