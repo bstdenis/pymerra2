@@ -13,9 +13,9 @@ from pymerra2 import __version__
 from pymerra2.variables import var_list
 
 # Aliases for default fill values
-defi2 = netCDF4.default_fillvals['i2']
-defi4 = netCDF4.default_fillvals['i4']
-deff4 = netCDF4.default_fillvals['f4']
+defi2 = netCDF4.default_fillvals["i2"]
+defi4 = netCDF4.default_fillvals["i4"]
+deff4 = netCDF4.default_fillvals["f4"]
 
 
 class NetCDFError(Exception):
@@ -30,8 +30,9 @@ class NetCDFError(Exception):
 # TODO: Write docstrings for ALL methods and classes from now on
 
 
-def _time_vectors_int(time_vectors, force=False, raise_exception=False,
-                      allow_masked=True, dtype='int32'):
+def _time_vectors_int(
+    time_vectors, force=False, raise_exception=False, allow_masked=True, dtype="int32"
+):
     # tries to make the time vectors array an integer array if possible.
     if allow_masked:
         time_vectors_int = ma.array(time_vectors, dtype=dtype)
@@ -63,7 +64,7 @@ def _datetimes_to_time_vectors(datetimes):
     # Does not support microsecond (datetime shape of length 7)
     def datetime_timetuple(one_datetime):
         if one_datetime is None:
-            return ma.masked_all([6], dtype='int32')
+            return ma.masked_all([6], dtype="int32")
         return one_datetime.timetuple()[0:6]
 
     try:
@@ -92,49 +93,48 @@ def fixed_netcdf(path_data, output_file, var_name, merra2_var_dict=None):
     if not merra2_var_dict:
         merra2_var_dict = var_list[var_name]
 
-    search_str = "*{0}*.nc4".format(merra2_var_dict['collection'])
+    search_str = "*{0}*.nc4".format(merra2_var_dict["collection"])
     nc_files = glob.glob(os.path.join(path_data, search_str))
 
-    nc_reference = netCDF4.Dataset(nc_files[0], 'r')
-    var_ref = nc_reference.variables[merra2_var_dict['merra_name']]
+    nc_reference = netCDF4.Dataset(nc_files[0], "r")
+    var_ref = nc_reference.variables[merra2_var_dict["merra_name"]]
 
     # 2.1 Filename
     #     NetCDF files should have the file name extension ".nc".
     nc_file = output_file
 
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    nc1 = netCDF4.Dataset(nc_file, 'w', format='NETCDF4_CLASSIC')
+    nc1 = netCDF4.Dataset(nc_file, "w", format="NETCDF4_CLASSIC")
 
     # 2.6.1 Identification of Conventions
-    nc1.Conventions = 'CF-1.7'
+    nc1.Conventions = "CF-1.7"
 
     # 2.6.2. Description of file contents
-    nc1.title = ('Modern-Era Retrospective analysis for Research and '
-                 'Applications, Version 2')
-    nc1.history = ("{0}\n{1} (pymerra2-{2}): "
-                   "Reformat to CF-1.7 & "
-                   "Extract variable.").format(
-        nc_reference.History, now, __version__)
+    nc1.title = (
+        "Modern-Era Retrospective analysis for Research and " "Applications, Version 2"
+    )
+    nc1.history = (
+        "{0}\n{1} (pymerra2-{2}): " "Reformat to CF-1.7 & " "Extract variable."
+    ).format(nc_reference.History, now, __version__)
     nc1.institution = nc_reference.Institution
-    nc1.source = 'Reanalysis'
+    nc1.source = "Reanalysis"
     nc1.references = nc_reference.References
     # Using lower case c for conventions because lower() is used below...
-    attr_overwrite = ['conventions', 'title', 'institution', 'source',
-                      'references']
+    attr_overwrite = ["conventions", "title", "institution", "source", "references"]
     ordered_attr = {}
     for attr in nc_reference.ncattrs():
-        if attr == 'History':
+        if attr == "History":
             continue
         if attr.lower() in attr_overwrite:
-            ordered_attr['original_file_' + attr] = getattr(nc_reference, attr)
+            ordered_attr["original_file_" + attr] = getattr(nc_reference, attr)
         else:
             ordered_attr[attr] = getattr(nc_reference, attr)
     for attr in sorted(ordered_attr.keys(), key=lambda v: v.lower()):
         setattr(nc1, attr, ordered_attr[attr])
 
     # Create netCDF dimensions
-    nc1.createDimension('lat', len(nc_reference.dimensions['lat']))
-    nc1.createDimension('lon', len(nc_reference.dimensions['lon']))
+    nc1.createDimension("lat", len(nc_reference.dimensions["lat"]))
+    nc1.createDimension("lon", len(nc_reference.dimensions["lon"]))
 
     # TODO: Remove these unused comments from source code to somewhere else?
     # Create netCDF variables
@@ -151,42 +151,55 @@ def fixed_netcdf(path_data, output_file, var_name, merra2_var_dict=None):
     #     this dimension).
 
     # 4.1. Latitude Coordinate
-    lat = nc1.createVariable('lat', 'f4', ('lat',), zlib=True)
-    lat.axis = 'Y'
-    lat.units = 'degrees_north'
-    lat.long_name = 'latitude'
-    lat.standard_name = 'latitude'
-    lat[:] = nc_reference.variables['lat'][:]
+    lat = nc1.createVariable("lat", "f4", ("lat",), zlib=True)
+    lat.axis = "Y"
+    lat.units = "degrees_north"
+    lat.long_name = "latitude"
+    lat.standard_name = "latitude"
+    lat[:] = nc_reference.variables["lat"][:]
 
     # 4.2. Longitude Coordinate
-    lon = nc1.createVariable('lon', 'f4', ('lon',), zlib=True)
-    lon.axis = 'X'
-    lon.units = 'degrees_east'
-    lon.long_name = 'longitude'
-    lon.standard_name = 'longitude'
-    lon[:] = nc_reference.variables['lon'][:]
+    lon = nc1.createVariable("lon", "f4", ("lon",), zlib=True)
+    lon.axis = "X"
+    lon.units = "degrees_east"
+    lon.long_name = "longitude"
+    lon.standard_name = "longitude"
+    lon[:] = nc_reference.variables["lon"][:]
 
-    least_digit = merra2_var_dict.get('least_significant_digit', None)
-    var1 = nc1.createVariable(var_name, 'f4', ('lat', 'lon'), zlib=True,
-                              fill_value=deff4,
-                              least_significant_digit=least_digit)
+    least_digit = merra2_var_dict.get("least_significant_digit", None)
+    var1 = nc1.createVariable(
+        var_name,
+        "f4",
+        ("lat", "lon"),
+        zlib=True,
+        fill_value=deff4,
+        least_significant_digit=least_digit,
+    )
     # 3.1. Units
     var1.units = var_ref.units
     # 3.2. Long Name
     var1.long_name = var_ref.long_name
     # 3.3. Standard Name
-    var1.standard_name = merra2_var_dict['standard_name']
-    var_ref = nc_reference.variables[merra2_var_dict['merra_name']]
+    var1.standard_name = merra2_var_dict["standard_name"]
+    var_ref = nc_reference.variables[merra2_var_dict["merra_name"]]
     var1[:, :] = var_ref[0, :, :]
 
     nc_reference.close()
     nc1.close()
 
 
-def subdaily_download(merra2_server, dataset_esdt, merra2_collection,
-                      initial_year, final_year, initial_month=1,
-                      final_month=12, initial_day=1, final_day=None,
-                      output_directory=None):
+def subdaily_download(
+    merra2_server,
+    dataset_esdt,
+    merra2_collection,
+    initial_year,
+    final_year,
+    initial_month=1,
+    final_month=12,
+    initial_day=1,
+    final_day=None,
+    output_directory=None,
+):
     """MERRA2 subdaily download.
 
     Parameters
@@ -209,25 +222,26 @@ def subdaily_download(merra2_server, dataset_esdt, merra2_collection,
     """
 
     if output_directory is None:
-        add_output_dir = ''
+        add_output_dir = ""
     else:
         add_output_dir = "--directory-prefix={0} ".format(output_directory)
 
     # TODO: replace this system call with a python wget approach
-    merra_cmd = ("wget -c {0}--load-cookies ~/.urs_cookies "
-                 "--save-cookies ~/.urs_cookies --keep-session-cookies {1}")
+    merra_cmd = (
+        "wget -c {0}--load-cookies ~/.urs_cookies "
+        "--save-cookies ~/.urs_cookies --keep-session-cookies {1}"
+    )
     merra_cmd = merra_cmd.format(add_output_dir, merra2_server)
-    data_path = ("MERRA2/{4}/{0}/{1}/"
-                 "MERRA2_{3}.{5}.{0}{1}{2}.nc4")
+    data_path = "MERRA2/{4}/{0}/{1}/" "MERRA2_{3}.{5}.{0}{1}{2}.nc4"
     for yyyy in range(initial_year, final_year + 1):
         if yyyy < 1992:
-            merra_stream = '100'
+            merra_stream = "100"
         elif yyyy < 2001:
-            merra_stream = '200'
+            merra_stream = "200"
         elif yyyy < 2011:
-            merra_stream = '300'
+            merra_stream = "300"
         else:
-            merra_stream = '400'
+            merra_stream = "400"
         if yyyy == initial_year:
             mi = initial_month
         else:
@@ -247,15 +261,27 @@ def subdaily_download(merra2_server, dataset_esdt, merra2_collection,
                 mrange = monthrange(yyyy, mm)
                 df = mrange[1]
             for dd in range(di, df + 1):
-                cdp = data_path.format(str(yyyy), str(mm).zfill(2),
-                                       str(dd).zfill(2), merra_stream,
-                                       dataset_esdt, merra2_collection)
+                cdp = data_path.format(
+                    str(yyyy),
+                    str(mm).zfill(2),
+                    str(dd).zfill(2),
+                    merra_stream,
+                    dataset_esdt,
+                    merra2_collection,
+                )
                 # TODO: Get rid of these system call and implement error handling earlier
                 os.system(merra_cmd + cdp)
 
 
-def subdaily_netcdf(path_data, output_file, var_name, initial_year,
-                    final_year, merra2_var_dict=None, verbose=False):
+def subdaily_netcdf(
+    path_data,
+    output_file,
+    var_name,
+    initial_year,
+    final_year,
+    merra2_var_dict=None,
+    verbose=False,
+):
     """MERRA2 subdaily NetCDF.
 
     Parameters
@@ -276,7 +302,7 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
     if not merra2_var_dict:
         merra2_var_dict = var_list[var_name]
 
-    search_str = "*{0}*.nc4".format(merra2_var_dict['collection'])
+    search_str = "*{0}*.nc4".format(merra2_var_dict["collection"])
     nc_files = glob.glob(os.path.join(path_data, search_str))
     nc_files.sort()
 
@@ -286,76 +312,76 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
     nt = 0
     nmb = 0
     for nc_file in nc_files:
-        yyyy = int(nc_file.split('.')[-2][0:4])
+        yyyy = int(nc_file.split(".")[-2][0:4])
         if (yyyy >= initial_year) and (yyyy <= final_year):
             relevant_files.append(nc_file)
-            nc = netCDF4.Dataset(nc_file, 'r')
-            ncvar = nc.variables[merra2_var_dict['merra_name']]
-            nmb += (ncvar.size * 4) / (1024. * 1024.)
+            nc = netCDF4.Dataset(nc_file, "r")
+            ncvar = nc.variables[merra2_var_dict["merra_name"]]
+            nmb += (ncvar.size * 4) / (1024.0 * 1024.0)
             if nmb > 500:
                 divided_files.append([nc_file])
                 nt_division.append(0)
-                nmb = (ncvar.size * 4) / (1024. * 1024.)
+                nmb = (ncvar.size * 4) / (1024.0 * 1024.0)
             else:
                 divided_files[-1].append(nc_file)
-            nt_division[-1] += len(nc.dimensions['time'])
-            nt += len(nc.dimensions['time'])
+            nt_division[-1] += len(nc.dimensions["time"])
+            nt += len(nc.dimensions["time"])
             nc.close()
 
-    nc_reference = netCDF4.Dataset(relevant_files[0], 'r')
-    var_ref = nc_reference.variables[merra2_var_dict['merra_name']]
+    nc_reference = netCDF4.Dataset(relevant_files[0], "r")
+    var_ref = nc_reference.variables[merra2_var_dict["merra_name"]]
 
     # 2.1 Filename
     #     NetCDF files should have the file name extension ".nc".
     nc_file = output_file
 
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    nc1 = netCDF4.Dataset(nc_file, 'w', format='NETCDF4_CLASSIC')
+    nc1 = netCDF4.Dataset(nc_file, "w", format="NETCDF4_CLASSIC")
 
     # 2.6.1 Identification of Conventions
-    nc1.Conventions = 'CF-1.7'
+    nc1.Conventions = "CF-1.7"
 
     # 2.6.2. Description of file contents
-    nc1.title = ('Modern-Era Retrospective analysis for Research and '
-                 'Applications, Version 2')
+    nc1.title = (
+        "Modern-Era Retrospective analysis for Research and " "Applications, Version 2"
+    )
     if (len(divided_files) == 1) and (len(divided_files[0]) == 1):
-        nc1.history = ("{0}\n{1} (pymerra2-{2}): "
-                       "Reformat to CF-1.7 & "
-                       "Extract variable.").format(
-            nc_reference.History, now, __version__)
+        nc1.history = (
+            "{0}\n{1} (pymerra2-{2}): " "Reformat to CF-1.7 & " "Extract variable."
+        ).format(nc_reference.History, now, __version__)
     else:
-        nc1.history = ("{0}\n{1} (pymerra2-{2}): "
-                       "Reformat to CF-1.7 & "
-                       "Extract variable & "
-                       "Merge in time.").format(
-            nc_reference.History, now, __version__)
+        nc1.history = (
+            "{0}\n{1} (pymerra2-{2}): "
+            "Reformat to CF-1.7 & "
+            "Extract variable & "
+            "Merge in time."
+        ).format(nc_reference.History, now, __version__)
     nc1.institution = nc_reference.Institution
-    nc1.source = 'Reanalysis'
+    nc1.source = "Reanalysis"
     nc1.references = nc_reference.References
 
     # Using lower case c for conventions because lower() is used below...
-    attr_overwrite = ['conventions', 'title', 'institution', 'source',
-                      'references']
+    attr_overwrite = ["conventions", "title", "institution", "source", "references"]
     ordered_attr = {}
     for attr in nc_reference.ncattrs():
-        if attr == 'History':
+        if attr == "History":
             continue
         if attr.lower() in attr_overwrite:
-            ordered_attr['original_file_' + attr] = getattr(nc_reference, attr)
+            ordered_attr["original_file_" + attr] = getattr(nc_reference, attr)
         else:
             ordered_attr[attr] = getattr(nc_reference, attr)
     for attr in sorted(ordered_attr.keys(), key=lambda v: v.lower()):
         setattr(nc1, attr, ordered_attr[attr])
 
     # Create netCDF dimensions
-    nc1.createDimension('time', nt)
+    nc1.createDimension("time", nt)
     # nc1.createDimension('ts', 6)
-    if 'lev' in nc_reference.dimensions:
-        nc1.createDimension('level', nc_reference.dimensions['lev'].size)
-    nc1.createDimension('lat', len(nc_reference.dimensions['lat']))
-    nc1.createDimension('lon', len(nc_reference.dimensions['lon']))
-    if merra2_var_dict['cell_methods']:
-        nc1.createDimension('nv', 2)
+    if "lev" in nc_reference.dimensions:
+        nc1.createDimension("level", nc_reference.dimensions["lev"].size)
+    nc1.createDimension("lat", len(nc_reference.dimensions["lat"]))
+    nc1.createDimension("lon", len(nc_reference.dimensions["lon"]))
+    if merra2_var_dict["cell_methods"]:
+        nc1.createDimension("nv", 2)
 
     # TODO: Remove these unused comments from source code to somewhere else?
     # Create netCDF variables
@@ -375,137 +401,156 @@ def subdaily_netcdf(path_data, output_file, var_name, initial_year,
     # nc1.createVariable('ts', 'i2', ('ts',), zlib=True, fill_value=defi2)
 
     # 4.4. Time Coordinate
-    if merra2_var_dict['cell_methods']:
-        time = nc1.createVariable('time', 'f4', ('time',))
+    if merra2_var_dict["cell_methods"]:
+        time = nc1.createVariable("time", "f4", ("time",))
     else:
-        time = nc1.createVariable('time', 'i4', ('time',))
-    time.axis = 'T'
+        time = nc1.createVariable("time", "i4", ("time",))
+    time.axis = "T"
     time.units = "hours since 1980-01-01 00:00:00"
-    time.long_name = 'time'
-    time.standard_name = 'time'
+    time.long_name = "time"
+    time.standard_name = "time"
     # 4.4.1. Calendar
-    time.calendar = 'gregorian'
+    time.calendar = "gregorian"
 
-    if merra2_var_dict['cell_methods']:
-        time.bounds = 'time_bnds'
-        tbounds = nc1.createVariable('time_bnds', 'f4', ('time', 'nv'))
+    if merra2_var_dict["cell_methods"]:
+        time.bounds = "time_bnds"
+        tbounds = nc1.createVariable("time_bnds", "f4", ("time", "nv"))
 
     # TODO: Remove these unused comments from source code to somewhere else?
     # time_vectors = nc1.createVariable('time_vectors', 'i2', ('time', 'ts'),
     #                                   zlib=True)
 
     # 4.3. Vertical (Height or Depth) Coordinate
-    if 'lev' in nc_reference.dimensions:
-        level = nc1.createVariable('level', 'i4', ('level',), zlib=True)
-        level.axis = 'Z'
-        level.units = 'Pa'
-        level.positive = 'down'
-        level.long_name = 'air_pressure'
-        level.standard_name = 'air_pressure'
-        level_ref = nc_reference.variables['lev']
-        if level_ref.units == 'hPa':
+    if "lev" in nc_reference.dimensions:
+        level = nc1.createVariable("level", "i4", ("level",), zlib=True)
+        level.axis = "Z"
+        level.units = "Pa"
+        level.positive = "down"
+        level.long_name = "air_pressure"
+        level.standard_name = "air_pressure"
+        level_ref = nc_reference.variables["lev"]
+        if level_ref.units == "hPa":
             level[:] = np.round(level_ref[:] * 100)
         else:
             raise NotImplementedError()
 
     # 4.1. Latitude Coordinate
-    lat = nc1.createVariable('lat', 'f4', ('lat',))
-    lat.axis = 'Y'
-    lat.units = 'degrees_north'
-    lat.long_name = 'latitude'
-    lat.standard_name = 'latitude'
-    lat[:] = nc_reference.variables['lat'][:]
+    lat = nc1.createVariable("lat", "f4", ("lat",))
+    lat.axis = "Y"
+    lat.units = "degrees_north"
+    lat.long_name = "latitude"
+    lat.standard_name = "latitude"
+    lat[:] = nc_reference.variables["lat"][:]
 
     # 4.2. Longitude Coordinate
-    lon = nc1.createVariable('lon', 'f4', ('lon',))
-    lon.axis = 'X'
-    lon.units = 'degrees_east'
-    lon.long_name = 'longitude'
-    lon.standard_name = 'longitude'
-    lon[:] = nc_reference.variables['lon'][:]
+    lon = nc1.createVariable("lon", "f4", ("lon",))
+    lon.axis = "X"
+    lon.units = "degrees_east"
+    lon.long_name = "longitude"
+    lon.standard_name = "longitude"
+    lon[:] = nc_reference.variables["lon"][:]
 
-    if 'lev' in nc_reference.dimensions:
-        var_dims = ('time', 'level', 'lat', 'lon')
+    if "lev" in nc_reference.dimensions:
+        var_dims = ("time", "level", "lat", "lon")
     else:
-        var_dims = ('time', 'lat', 'lon')
+        var_dims = ("time", "lat", "lon")
     # Here, the chunksize is set rather arbitrarily...
-    if 'lev' in nc_reference.dimensions:
+    if "lev" in nc_reference.dimensions:
         var1_chunksizes = (8, 6, 121, 144)
     else:
         var1_chunksizes = (360, 30, 30)
-    least_digit = merra2_var_dict.get('least_significant_digit', None)
-    var1 = nc1.createVariable(var_name, 'f4', var_dims, zlib=True,
-                              chunksizes=var1_chunksizes, fill_value=deff4,
-                              least_significant_digit=least_digit)
+    least_digit = merra2_var_dict.get("least_significant_digit", None)
+    var1 = nc1.createVariable(
+        var_name,
+        "f4",
+        var_dims,
+        zlib=True,
+        chunksizes=var1_chunksizes,
+        fill_value=deff4,
+        least_significant_digit=least_digit,
+    )
     # 3.1. Units
     # Force kg kg-1 to 1
-    if var_ref.units == 'kg kg-1':
-        var1.units = '1'
+    if var_ref.units == "kg kg-1":
+        var1.units = "1"
     else:
         var1.units = var_ref.units
     # 3.2. Long Name
     var1.long_name = var_ref.long_name
     # 3.3. Standard Name
-    var1.standard_name = merra2_var_dict['standard_name']
-    if merra2_var_dict['cell_methods']:
-        var1.cell_methods = merra2_var_dict['cell_methods']
+    var1.standard_name = merra2_var_dict["standard_name"]
+    if merra2_var_dict["cell_methods"]:
+        var1.cell_methods = merra2_var_dict["cell_methods"]
 
     nc_reference.close()
 
     t = 0
     for i, division in enumerate(divided_files):
-        if 'lev' in nc_reference.dimensions:
+        if "lev" in nc_reference.dimensions:
             tmp_data = ma.masked_all(
-                [nt_division[i], len(nc1.dimensions['level']),
-                 len(nc1.dimensions['lat']), len(nc1.dimensions['lon'])])
+                [
+                    nt_division[i],
+                    len(nc1.dimensions["level"]),
+                    len(nc1.dimensions["lat"]),
+                    len(nc1.dimensions["lon"]),
+                ]
+            )
         else:
             tmp_data = ma.masked_all(
-                [nt_division[i], len(nc1.dimensions['lat']),
-                 len(nc1.dimensions['lon'])])
+                [nt_division[i], len(nc1.dimensions["lat"]), len(nc1.dimensions["lon"])]
+            )
         tmp_time = ma.masked_all([nt_division[i]])
         ttmp = 0
         for nc_file in division:
             if verbose:
                 print(nc_file)
-            nc = netCDF4.Dataset(nc_file, 'r')
-            ncvar = nc.variables[merra2_var_dict['merra_name']]
-            nctime = nc.variables['time']
+            nc = netCDF4.Dataset(nc_file, "r")
+            ncvar = nc.variables[merra2_var_dict["merra_name"]]
+            nctime = nc.variables["time"]
             ncdatetime = netCDF4.num2date(nctime[:], nctime.units)
-            if merra2_var_dict['cell_methods']:
+            if merra2_var_dict["cell_methods"]:
                 nctime_1980 = netCDF4.date2num(ncdatetime, time.units)
             else:
-                nctime_1980 = np.round(
-                    netCDF4.date2num(ncdatetime, time.units))
-            if 'lev' in nc_reference.dimensions:
-                tmp_data[ttmp:ttmp + ncvar.shape[0], :, :, :] = ncvar[:, :, :, :]
+                nctime_1980 = np.round(netCDF4.date2num(ncdatetime, time.units))
+            if "lev" in nc_reference.dimensions:
+                tmp_data[ttmp : ttmp + ncvar.shape[0], :, :, :] = ncvar[:, :, :, :]
             else:
-                tmp_data[ttmp:ttmp + ncvar.shape[0], :, :] = ncvar[:, :, ]
-            tmp_time[ttmp:ttmp + ncvar.shape[0]] = nctime_1980[:]
+                tmp_data[ttmp : ttmp + ncvar.shape[0], :, :] = ncvar[:, :]
+            tmp_time[ttmp : ttmp + ncvar.shape[0]] = nctime_1980[:]
             ttmp += ncvar.shape[0]
             nc.close()
-        if 'lev' in nc_reference.dimensions:
-            var1[t:t + tmp_data.shape[0], :, :, :] = tmp_data[:, :, :, :]
+        if "lev" in nc_reference.dimensions:
+            var1[t : t + tmp_data.shape[0], :, :, :] = tmp_data[:, :, :, :]
         else:
-            var1[t:t + tmp_data.shape[0], :, :] = tmp_data[:, :, :]
-        time[t:t + tmp_data.shape[0]] = tmp_time[:]
-        if merra2_var_dict['cell_methods']:
+            var1[t : t + tmp_data.shape[0], :, :] = tmp_data[:, :, :]
+        time[t : t + tmp_data.shape[0]] = tmp_time[:]
+        if merra2_var_dict["cell_methods"]:
             if tmp_time[1] - tmp_time[0] == 1.0:
-                tbounds[t:t + tmp_data.shape[0], 0] = tmp_time[:] - 0.5
-                tbounds[t:t + tmp_data.shape[0], 1] = tmp_time[:] + 0.5
+                tbounds[t : t + tmp_data.shape[0], 0] = tmp_time[:] - 0.5
+                tbounds[t : t + tmp_data.shape[0], 1] = tmp_time[:] + 0.5
             elif tmp_time[1] - tmp_time[0] == 3.0:
-                tbounds[t:t + tmp_data.shape[0], 0] = tmp_time[:] - 1.5
-                tbounds[t:t + tmp_data.shape[0], 1] = tmp_time[:] + 1.5
+                tbounds[t : t + tmp_data.shape[0], 0] = tmp_time[:] - 1.5
+                tbounds[t : t + tmp_data.shape[0], 1] = tmp_time[:] + 1.5
         t += tmp_data.shape[0]
 
     nc1.close()
 
 
-def subdaily_download_and_convert(merra2_server, var_names, initial_year,
-                                  final_year, initial_month=1, final_month=12,
-                                  initial_day=1, final_day=None,
-                                  merra2_var_dicts=None, output_dir=None,
-                                  delete_temp_dir=True, verbose=True,
-                                  time_frequency='1hr'):
+def subdaily_download_and_convert(
+    merra2_server,
+    var_names,
+    initial_year,
+    final_year,
+    initial_month=1,
+    final_month=12,
+    initial_day=1,
+    final_day=None,
+    merra2_var_dicts=None,
+    output_dir=None,
+    delete_temp_dir=True,
+    verbose=True,
+    time_frequency="1hr",
+):
     """MERRA2 subdaily download and conversion.
 
     Parameters
@@ -546,40 +591,69 @@ def subdaily_download_and_convert(merra2_server, var_names, initial_year,
         # Download subdaily files
         if i == 0:
             subdaily_download(
-                merra2_server, merra2_var_dict['esdt_dir'],
-                merra2_var_dict['collection'], initial_year, final_year,
-                initial_month=initial_month, final_month=final_month,
-                initial_day=initial_day, final_day=final_day,
-                output_directory=temp_dir_download)
+                merra2_server,
+                merra2_var_dict["esdt_dir"],
+                merra2_var_dict["collection"],
+                initial_year,
+                final_year,
+                initial_month=initial_month,
+                final_month=final_month,
+                initial_day=initial_day,
+                final_day=final_day,
+                output_directory=temp_dir_download,
+            )
         # Name the output file
         if (initial_year == final_year) and (initial_month == final_month):
             if initial_day == final_day:
                 file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}{4}.nc"
                 out_file_name = file_name_str.format(
-                    var_name, time_frequency, str(initial_year),
-                    str(initial_month).zfill(2), str(initial_day).zfill(2))
+                    var_name,
+                    time_frequency,
+                    str(initial_year),
+                    str(initial_month).zfill(2),
+                    str(initial_day).zfill(2),
+                )
             else:
                 file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}.nc"
                 out_file_name = file_name_str.format(
-                    var_name, time_frequency, str(initial_year),
-                    str(initial_month).zfill(2))
+                    var_name,
+                    time_frequency,
+                    str(initial_year),
+                    str(initial_month).zfill(2),
+                )
         else:
             file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}-{4}{5}.nc"
             out_file_name = file_name_str.format(
-                var_name, time_frequency, str(initial_year),
-                str(initial_month).zfill(2), str(final_year),
-                str(final_month).zfill(2))
+                var_name,
+                time_frequency,
+                str(initial_year),
+                str(initial_month).zfill(2),
+                str(final_year),
+                str(final_month).zfill(2),
+            )
         out_file = os.path.join(output_dir, out_file_name)
         # Extract variable
         subdaily_netcdf(
-            temp_dir_download, out_file, var_name, initial_year, final_year,
-            verbose=verbose)
+            temp_dir_download,
+            out_file,
+            var_name,
+            initial_year,
+            final_year,
+            verbose=verbose,
+        )
     if delete_temp_dir:
         shutil.rmtree(temp_dir_download)
 
 
-def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
-                 merra2_var_dict=None, verbose=False):
+def daily_netcdf(
+    path_data,
+    output_file,
+    var_name,
+    initial_year,
+    final_year,
+    merra2_var_dict=None,
+    verbose=False,
+):
     """MERRA2 daily NetCDF.
 
     Parameters
@@ -606,7 +680,7 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
     if not merra2_var_dict:
         merra2_var_dict = var_list[var_name]
 
-    search_str = "*{0}*.nc4".format(merra2_var_dict['collection'])
+    search_str = "*{0}*.nc4".format(merra2_var_dict["collection"])
     nc_files = glob.glob(os.path.join(path_data, search_str))
     nc_files.sort()
 
@@ -616,75 +690,75 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
     nt = 0
     nmb = 0
     for nc_file in nc_files:
-        yyyy = int(nc_file.split('.')[-2][0:4])
+        yyyy = int(nc_file.split(".")[-2][0:4])
         if (yyyy >= initial_year) and (yyyy <= final_year):
             relevant_files.append(nc_file)
-            nc = netCDF4.Dataset(nc_file, 'r')
-            ncvar = nc.variables[merra2_var_dict['merra_name']]
-            nmb += (ncvar.size * 4) / (1024. * 1024.)
+            nc = netCDF4.Dataset(nc_file, "r")
+            ncvar = nc.variables[merra2_var_dict["merra_name"]]
+            nmb += (ncvar.size * 4) / (1024.0 * 1024.0)
             if nmb > 500:
                 divided_files.append([nc_file])
                 nt_division.append(0)
-                nmb = (ncvar.size * 4) / (1024. * 1024.)
+                nmb = (ncvar.size * 4) / (1024.0 * 1024.0)
             else:
                 divided_files[-1].append(nc_file)
-            nt_division[-1] += len(nc.dimensions['time'])
-            nt += len(nc.dimensions['time'])
+            nt_division[-1] += len(nc.dimensions["time"])
+            nt += len(nc.dimensions["time"])
             nc.close()
 
-    nc_reference = netCDF4.Dataset(relevant_files[0], 'r')
-    var_ref = nc_reference.variables[merra2_var_dict['merra_name']]
+    nc_reference = netCDF4.Dataset(relevant_files[0], "r")
+    var_ref = nc_reference.variables[merra2_var_dict["merra_name"]]
 
     # 2.1 Filename
     #     NetCDF files should have the file name extension ".nc".
     nc_file = output_file
 
     now = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    nc1 = netCDF4.Dataset(nc_file, 'w', format='NETCDF4_CLASSIC')
+    nc1 = netCDF4.Dataset(nc_file, "w", format="NETCDF4_CLASSIC")
 
     # 2.6.1 Identification of Conventions
-    nc1.Conventions = 'CF-1.7'
+    nc1.Conventions = "CF-1.7"
 
     # 2.6.2. Description of file contents
-    nc1.title = ('Modern-Era Retrospective analysis for Research and '
-                 'Applications, Version 2')
+    nc1.title = (
+        "Modern-Era Retrospective analysis for Research and " "Applications, Version 2"
+    )
     if (len(divided_files) == 1) and (len(divided_files[0]) == 1):
-        nc1.history = ("{0}\n{1} (pymerra2-{2}): "
-                       "Reformat to CF-1.7 & "
-                       "Extract variable.").format(
-            nc_reference.History, now, __version__)
+        nc1.history = (
+            "{0}\n{1} (pymerra2-{2}): " "Reformat to CF-1.7 & " "Extract variable."
+        ).format(nc_reference.History, now, __version__)
     else:
-        nc1.history = ("{0}\n{1} (pymerra2-{2}): "
-                       "Reformat to CF-1.7 & "
-                       "Extract variable & "
-                       "Merge in time.").format(
-            nc_reference.History, now, __version__)
+        nc1.history = (
+            "{0}\n{1} (pymerra2-{2}): "
+            "Reformat to CF-1.7 & "
+            "Extract variable & "
+            "Merge in time."
+        ).format(nc_reference.History, now, __version__)
     nc1.institution = nc_reference.Institution
-    nc1.source = 'Reanalysis'
+    nc1.source = "Reanalysis"
     nc1.references = nc_reference.References
 
     # Using lower case c for conventions because lower() is used below...
-    attr_overwrite = ['conventions', 'title', 'institution', 'source',
-                      'references']
+    attr_overwrite = ["conventions", "title", "institution", "source", "references"]
     ordered_attr = {}
     for attr in nc_reference.ncattrs():
-        if attr == 'History':
+        if attr == "History":
             continue
         if attr.lower() in attr_overwrite:
-            ordered_attr['original_file_' + attr] = getattr(nc_reference, attr)
+            ordered_attr["original_file_" + attr] = getattr(nc_reference, attr)
         else:
             ordered_attr[attr] = getattr(nc_reference, attr)
     for attr in sorted(ordered_attr.keys(), key=lambda v: v.lower()):
         setattr(nc1, attr, ordered_attr[attr])
 
     # Create netCDF dimensions
-    nc1.createDimension('time', nt)
+    nc1.createDimension("time", nt)
     # nc1.createDimension('ts', 6)
     # nc1.createDimension('level', k)
-    nc1.createDimension('lat', len(nc_reference.dimensions['lat']))
-    nc1.createDimension('lon', len(nc_reference.dimensions['lon']))
-    if merra2_var_dict['cell_methods']:
-        nc1.createDimension('nv', 2)
+    nc1.createDimension("lat", len(nc_reference.dimensions["lat"]))
+    nc1.createDimension("lon", len(nc_reference.dimensions["lon"]))
+    if merra2_var_dict["cell_methods"]:
+        nc1.createDimension("nv", 2)
 
     # TODO: Remove these unused comments from source code to somewhere else?
     # Create netCDF variables
@@ -704,17 +778,17 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
     # nc1.createVariable('ts', 'i2', ('ts',), zlib=True, fill_value=defi2)
 
     # 4.4. Time Coordinate
-    time = nc1.createVariable('time', 'i4', ('time',), zlib=True)
-    time.axis = 'T'
+    time = nc1.createVariable("time", "i4", ("time",), zlib=True)
+    time.axis = "T"
     time.units = "hours since 1980-01-01 00:00:00"
-    time.long_name = 'time'
-    time.standard_name = 'time'
+    time.long_name = "time"
+    time.standard_name = "time"
     # 4.4.1. Calendar
-    time.calendar = 'gregorian'
+    time.calendar = "gregorian"
 
-    if merra2_var_dict['cell_methods']:
-        time.bounds = 'time_bnds'
-        tbounds = nc1.createVariable('time_bnds', 'i4', ('time', 'nv'))
+    if merra2_var_dict["cell_methods"]:
+        time.bounds = "time_bnds"
+        tbounds = nc1.createVariable("time_bnds", "i4", ("time", "nv"))
 
     # TODO: Remove these unused comments from source code to somewhere else?
     # 4.3. Vertical (Height or Depth) Coordinate
@@ -726,70 +800,85 @@ def daily_netcdf(path_data, output_file, var_name, initial_year, final_year,
     # level.standard_name = 'air_pressure'
 
     # 4.1. Latitude Coordinate
-    lat = nc1.createVariable('lat', 'f4', ('lat',), zlib=True)
-    lat.axis = 'Y'
-    lat.units = 'degrees_north'
-    lat.long_name = 'latitude'
-    lat.standard_name = 'latitude'
-    lat[:] = nc_reference.variables['lat'][:]
+    lat = nc1.createVariable("lat", "f4", ("lat",), zlib=True)
+    lat.axis = "Y"
+    lat.units = "degrees_north"
+    lat.long_name = "latitude"
+    lat.standard_name = "latitude"
+    lat[:] = nc_reference.variables["lat"][:]
 
     # 4.2. Longitude Coordinate
-    lon = nc1.createVariable('lon', 'f4', ('lon',), zlib=True)
-    lon.axis = 'X'
-    lon.units = 'degrees_east'
-    lon.long_name = 'longitude'
-    lon.standard_name = 'longitude'
-    lon[:] = nc_reference.variables['lon'][:]
+    lon = nc1.createVariable("lon", "f4", ("lon",), zlib=True)
+    lon.axis = "X"
+    lon.units = "degrees_east"
+    lon.long_name = "longitude"
+    lon.standard_name = "longitude"
+    lon[:] = nc_reference.variables["lon"][:]
 
-    least_digit = merra2_var_dict.get('least_significant_digit', None)
-    var1 = nc1.createVariable(var_name, 'f4', ('time', 'lat', 'lon'),
-                              zlib=True, chunksizes=(30, 120, 120),
-                              fill_value=deff4,
-                              least_significant_digit=least_digit)
+    least_digit = merra2_var_dict.get("least_significant_digit", None)
+    var1 = nc1.createVariable(
+        var_name,
+        "f4",
+        ("time", "lat", "lon"),
+        zlib=True,
+        chunksizes=(30, 120, 120),
+        fill_value=deff4,
+        least_significant_digit=least_digit,
+    )
     # 3.1. Units
     var1.units = var_ref.units
     # 3.2. Long Name
     var1.long_name = var_ref.long_name
     # 3.3. Standard Name
-    var1.standard_name = merra2_var_dict['standard_name']
-    if merra2_var_dict['cell_methods']:
-        var1.cell_methods = merra2_var_dict['cell_methods']
+    var1.standard_name = merra2_var_dict["standard_name"]
+    if merra2_var_dict["cell_methods"]:
+        var1.cell_methods = merra2_var_dict["cell_methods"]
 
     nc_reference.close()
 
     t = 0
     for i, division in enumerate(divided_files):
-        tmp_data = ma.masked_all([nt_division[i], len(nc1.dimensions['lat']),
-                                  len(nc1.dimensions['lon'])])
+        tmp_data = ma.masked_all(
+            [nt_division[i], len(nc1.dimensions["lat"]), len(nc1.dimensions["lon"])]
+        )
         tmp_time = ma.masked_all([nt_division[i]])
         ttmp = 0
         for nc_file in division:
             if verbose:
                 print(nc_file)
-            nc = netCDF4.Dataset(nc_file, 'r')
-            ncvar = nc.variables[merra2_var_dict['merra_name']]
-            nctime = nc.variables['time']
+            nc = netCDF4.Dataset(nc_file, "r")
+            ncvar = nc.variables[merra2_var_dict["merra_name"]]
+            nctime = nc.variables["time"]
             ncdatetime = netCDF4.num2date(nctime[:], nctime.units)
             nctime_1980 = np.round(netCDF4.date2num(ncdatetime, time.units))
-            tmp_data[ttmp:ttmp + ncvar.shape[0], :, :] = ncvar[:, :, :]
-            tmp_time[ttmp:ttmp + ncvar.shape[0]] = nctime_1980[:]
+            tmp_data[ttmp : ttmp + ncvar.shape[0], :, :] = ncvar[:, :, :]
+            tmp_time[ttmp : ttmp + ncvar.shape[0]] = nctime_1980[:]
             ttmp += ncvar.shape[0]
             nc.close()
-        var1[t:t + tmp_data.shape[0], :, :] = tmp_data[:, :, :]
-        time[t:t + tmp_data.shape[0]] = tmp_time[:]
-        if merra2_var_dict['cell_methods']:
-            tbounds[t:t + tmp_data.shape[0], 0] = tmp_time[:] - 12
-            tbounds[t:t + tmp_data.shape[0], 1] = tmp_time[:] + 12
+        var1[t : t + tmp_data.shape[0], :, :] = tmp_data[:, :, :]
+        time[t : t + tmp_data.shape[0]] = tmp_time[:]
+        if merra2_var_dict["cell_methods"]:
+            tbounds[t : t + tmp_data.shape[0], 0] = tmp_time[:] - 12
+            tbounds[t : t + tmp_data.shape[0], 1] = tmp_time[:] + 12
         t += tmp_data.shape[0]
 
     nc1.close()
 
 
-def daily_download_and_convert(merra2_server, var_names, initial_year,
-                               final_year, initial_month=1, final_month=12,
-                               initial_day=1, final_day=None,
-                               merra2_var_dicts=None, output_dir=None,
-                               delete_temp_dir=True, verbose=True):
+def daily_download_and_convert(
+    merra2_server,
+    var_names,
+    initial_year,
+    final_year,
+    initial_month=1,
+    final_month=12,
+    initial_day=1,
+    final_day=None,
+    merra2_var_dicts=None,
+    output_dir=None,
+    delete_temp_dir=True,
+    verbose=True,
+):
     """MERRA2 daily download and conversion.
 
     Parameters
@@ -834,11 +923,17 @@ def daily_download_and_convert(merra2_server, var_names, initial_year,
         # Download subdaily files
         if i == 0:
             subdaily_download(
-                merra2_server, merra2_var_dict['esdt_dir'],
-                merra2_var_dict['collection'], initial_year, final_year,
-                initial_month=initial_month, final_month=final_month,
-                initial_day=initial_day, final_day=final_day,
-                output_directory=temp_dir_download)
+                merra2_server,
+                merra2_var_dict["esdt_dir"],
+                merra2_var_dict["collection"],
+                initial_year,
+                final_year,
+                initial_month=initial_month,
+                final_month=final_month,
+                initial_day=initial_day,
+                final_day=final_day,
+                output_directory=temp_dir_download,
+            )
         # Name the output file
         if initial_year == final_year:
             file_name_str = "{0}_day_merra2_reanalysis_{1}.nc"
@@ -846,11 +941,17 @@ def daily_download_and_convert(merra2_server, var_names, initial_year,
         else:
             file_name_str = "{0}_day_merra2_reanalysis_{1}-{2}.nc"
             out_file_name = file_name_str.format(
-                var_name, str(initial_year), str(final_year))
+                var_name, str(initial_year), str(final_year)
+            )
         out_file = os.path.join(output_dir, out_file_name)
         # Extract variable
         daily_netcdf(
-            temp_dir_download, out_file, var_name, initial_year, final_year,
-            verbose=verbose)
+            temp_dir_download,
+            out_file,
+            var_name,
+            initial_year,
+            final_year,
+            verbose=verbose,
+        )
     if delete_temp_dir:
         shutil.rmtree(temp_dir_download)
