@@ -234,8 +234,8 @@ def subdaily_download(
     initial_month : int
     final_month : int
     initial_day : int
-    final_day : int
-    output_directory : str
+    final_day : Optional[int]
+    output_directory : Union[str, Path]
     """
 
     if output_directory is None:
@@ -442,6 +442,7 @@ def subdaily_netcdf(
     # 4.4.1. Calendar
     time.calendar = "gregorian"
 
+    tbounds = None
     if merra2_var_dict["cell_methods"]:
         # TODO: This breaks time. Caveat emptor.
         # time.bounds = "time_bnds"
@@ -555,6 +556,7 @@ def subdaily_netcdf(
             var1[t : t + tmp_data.shape[0], :, :] = tmp_data[:, :, :]
         time[t : t + tmp_data.shape[0]] = tmp_time[:]
         if merra2_var_dict["cell_methods"]:
+            # TODO: There is something not working here. 29 Oct 2019.
             if tmp_time[1] - tmp_time[0] == 1.0:
                 tbounds[t : t + tmp_data.shape[0], 0] = tmp_time[:] - 0.5
                 tbounds[t : t + tmp_data.shape[0], 1] = tmp_time[:] + 0.5
@@ -734,7 +736,7 @@ def daily_netcdf(
             nc = netCDF4.Dataset(nc_file, "r")
             ncvar = nc.variables[merra2_var_dict["merra_name"]]
             nmb += (ncvar.size * 4) / MiB
-            if nmb > 500:
+            if nmb > 512:
                 divided_files.append([nc_file])
                 nt_division.append(0)
                 nmb = (ncvar.size * 4) / MiB
