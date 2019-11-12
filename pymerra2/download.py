@@ -154,7 +154,6 @@ def fixed_netcdf(
     nc1.createDimension("lat", len(nc_reference.dimensions["lat"]))
     nc1.createDimension("lon", len(nc_reference.dimensions["lon"]))
 
-    # TODO: Remove these unused comments from source code to somewhere else?
     # Create netCDF variables
     # Compression parameters include:
     # zlib=True,complevel=9,least_significant_digit=1
@@ -243,12 +242,6 @@ def subdaily_download(
     else:
         add_output_dir = "--directory-prefix={0}".format(output_directory)
 
-    # TODO: replace this system call with a python wget approach
-    # merra_cmd = (
-    #     "wget -c {0}--load-cookies ~/.urs_cookies "
-    #     "--save-cookies ~/.urs_cookies --keep-session-cookies {1}"
-    # )
-    # merra_cmd = merra_cmd.format(add_output_dir, merra2_server)
     data_path = "MERRA2/{4}/{0}/{1}/" "MERRA2_{3}.{5}.{0}{1}{2}.nc4"
     for yyyy in range(initial_year, final_year + 1):
         if yyyy < 1992:
@@ -444,7 +437,7 @@ def subdaily_netcdf(
 
     tbounds = None
     if merra2_var_dict["cell_methods"]:
-        # TODO: This breaks time. Caveat emptor.
+        # WARNING: This breaks time. Caveat emptor.
         # time.bounds = "time_bnds"
         tbounds = nc1.createVariable("time_bnds", "f4", ("time", "nv"))
 
