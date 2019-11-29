@@ -531,7 +531,9 @@ def subdaily_netcdf(
             nc = netCDF4.Dataset(nc_file, "r")
             ncvar = nc.variables[merra2_var_dict["merra_name"]]
             nctime = nc.variables["time"]
+
             ncdatetime = netCDF4.num2date(nctime[:], nctime.units)
+
             if merra2_var_dict["cell_methods"]:
                 nctime_1980 = netCDF4.date2num(ncdatetime, time.units)
             else:
@@ -559,6 +561,49 @@ def subdaily_netcdf(
         t += tmp_data.shape[0]
 
     nc1.close()
+
+
+def file_namer(
+    var_name,
+    time_frequency: str,
+    initial_year,
+    final_year,
+    initial_month,
+    final_month,
+    initial_day: int = None,
+    final_day: int = None,
+):
+    # Name the output file
+    if (initial_year == final_year) and (initial_month == final_month):
+        if initial_day == final_day and (None not in [initial_day, final_day]):
+            file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}{4}.nc"
+            out_file_name = file_name_str.format(
+                var_name,
+                time_frequency,
+                str(initial_year),
+                str(initial_month).zfill(2),
+                str(initial_day).zfill(2),
+            )
+        else:
+            file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}.nc"
+            out_file_name = file_name_str.format(
+                var_name,
+                time_frequency,
+                str(initial_year),
+                str(initial_month).zfill(2),
+            )
+    else:
+        file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}-{4}{5}.nc"
+        out_file_name = file_name_str.format(
+            var_name,
+            time_frequency,
+            str(initial_year),
+            str(initial_month).zfill(2),
+            str(final_year),
+            str(final_month).zfill(2),
+        )
+
+    return out_file_name
 
 
 def subdaily_download_and_convert(
@@ -634,35 +679,47 @@ def subdaily_download_and_convert(
                 output_directory=temp_dir_download,
             )
         # Name the output file
-        if (initial_year == final_year) and (initial_month == final_month):
-            if initial_day == final_day:
-                file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}{4}.nc"
-                out_file_name = file_name_str.format(
-                    var_name,
-                    time_frequency,
-                    str(initial_year),
-                    str(initial_month).zfill(2),
-                    str(initial_day).zfill(2),
-                )
-            else:
-                file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}.nc"
-                out_file_name = file_name_str.format(
-                    var_name,
-                    time_frequency,
-                    str(initial_year),
-                    str(initial_month).zfill(2),
-                )
-        else:
-            file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}-{4}{5}.nc"
-            out_file_name = file_name_str.format(
-                var_name,
-                time_frequency,
-                str(initial_year),
-                str(initial_month).zfill(2),
-                str(final_year),
-                str(final_month).zfill(2),
-            )
+        out_file_name = file_namer(
+            var_name,
+            time_frequency,
+            initial_year,
+            final_year,
+            initial_month,
+            final_month,
+            initial_day,
+            final_day,
+        )
+        #
+        # if (initial_year == final_year) and (initial_month == final_month):
+        #     if initial_day == final_day:
+        #         file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}{4}.nc"
+        #         out_file_name = file_name_str.format(
+        #             var_name,
+        #             time_frequency,
+        #             str(initial_year),
+        #             str(initial_month).zfill(2),
+        #             str(initial_day).zfill(2),
+        #         )
+        #     else:
+        #         file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}.nc"
+        #         out_file_name = file_name_str.format(
+        #             var_name,
+        #             time_frequency,
+        #             str(initial_year),
+        #             str(initial_month).zfill(2),
+        #         )
+        # else:
+        #     file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}-{4}{5}.nc"
+        #     out_file_name = file_name_str.format(
+        #         var_name,
+        #         time_frequency,
+        #         str(initial_year),
+        #         str(initial_month).zfill(2),
+        #         str(final_year),
+        #         str(final_month).zfill(2),
+        #     )
         out_file = Path(output_dir).joinpath(out_file_name)
+
         # Extract variable
         subdaily_netcdf(
             temp_dir_download,

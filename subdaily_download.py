@@ -23,83 +23,50 @@ merra2_server = "https://goldsmr4.gesdisc.eosdis.nasa.gov/data/"
 # pymerra2_variables.py, this can be set to None.
 
 # This loop will create monthly files of hourly MERRA2 data
-for yyyy in range(2017, 2019):
-    for mm in range(1, 13):
-        try:
-            download.subdaily_download_and_convert(
-                merra2_server,
-                var_names,
-                merra2_var_dicts=None,
-                initial_year=yyyy,
-                final_year=yyyy,
-                initial_month=mm,
-                final_month=mm,
-                initial_day=1,
-                final_day=None,
-                output_dir=download_dir,
-                delete_temp_dir=delete_temp_dir,
-                time_frequency=time_frequency,
-            )
-        except Exception as e:
-            msg = "{}: File not found".format(e)
-            logging.error(msg)
-            continue
+# for yyyy in range(2017, 2019):
+#     for mm in range(1, 13):
+#         try:
+#             download.subdaily_download_and_convert(
+#                 merra2_server,
+#                 var_names,
+#                 merra2_var_dicts=None,
+#                 initial_year=yyyy,
+#                 final_year=yyyy,
+#                 initial_month=mm,
+#                 final_month=mm,
+#                 initial_day=1,
+#                 final_day=None,
+#                 output_dir=download_dir,
+#                 delete_temp_dir=delete_temp_dir,
+#                 time_frequency=time_frequency,
+#             )
+#         except Exception as e:
+#             msg = "{}: File not found".format(e)
+#             logging.error(msg)
+#             continue
+
+for v in var_names:
+    for yyyy in range(2017, 2019):
+        for mm in range(1, 13):
+
+            out_file_name = download.file_namer(v, time_frequency, yyyy, yyyy, mm, mm,)
+            try:
+
+                download.subdaily_netcdf(
+                    path_data=download_dir,
+                    output_file=out_file_name,
+                    var_name="pr",
+                    initial_year=yyyy,
+                    final_year=yyyy,
+                    merra2_var_dict=None,
+                    verbose=False,
+                )
+            except Exception as e:
+                msg = "{}: File not found".format(e)
+                logging.error(msg)
+                continue
 
 
-def file_namer(
-    var_name,
-    initial_year,
-    final_year,
-    initial_month,
-    final_month,
-    initial_day: int = None,
-    final_day: int = None,
-):
-    # Name the output file
-    if (initial_year == final_year) and (initial_month == final_month):
-        if initial_day == final_day:
-            file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}{4}.nc"
-            out_file_name = file_name_str.format(
-                var_name,
-                time_frequency,
-                str(initial_year),
-                str(initial_month).zfill(2),
-                str(initial_day).zfill(2),
-            )
-        else:
-            file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}.nc"
-            out_file_name = file_name_str.format(
-                var_name,
-                time_frequency,
-                str(initial_year),
-                str(initial_month).zfill(2),
-            )
-    else:
-        file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}-{4}{5}.nc"
-        out_file_name = file_name_str.format(
-            var_name,
-            time_frequency,
-            str(initial_year),
-            str(initial_month).zfill(2),
-            str(final_year),
-            str(final_month).zfill(2),
-        )
-
-
-for yyyy in range(2017, 2019):
-    for mm in range(1, 13):
-        try:
-
-            download.subdaily_netcdf(
-                path_data=download_dir,
-                output_file="toto1.nc",
-                var_name="pr",
-                initial_year=yyyy,
-                final_year=yyyy,
-                merra2_var_dict=None,
-                verbose=False,
-            )
-        except Exception as e:
-            msg = "{}: File not found".format(e)
-            logging.error(msg)
-            continue
+# if __name__ == "__main__":
+#     f = file_namer("tas", "1hr", 2017, 2017, 12, 12)
+#     print(f)
