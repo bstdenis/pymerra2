@@ -301,6 +301,8 @@ def subdaily_netcdf(
     var_name: str,
     initial_year: int,
     final_year: int,
+    initial_month: int,
+    final_month: int,
     merra2_var_dict: Optional[dict] = None,
     verbose: bool = False,
 ):
@@ -337,12 +339,13 @@ def subdaily_netcdf(
     nmb = 0
     for nc_file in nc_files:
         yyyy = int(nc_file.split(".")[-2][0:4])
-        if (yyyy >= initial_year) and (yyyy <= final_year):
+        mm = int(nc_file.split(".")[-2][4:6])
+        if (yyyy >= initial_year) and (yyyy <= final_year) and (mm >= initial_month) and (mm <= final_month):
             relevant_files.append(nc_file)
             nc = netCDF4.Dataset(nc_file, "r")
             ncvar = nc.variables[merra2_var_dict["merra_name"]]
             nmb += (ncvar.size * 4) / MiB
-            if nmb > 512:
+            if nmb > 512 * 2:
                 divided_files.append([nc_file])
                 nt_division.append(0)
                 nmb = (ncvar.size * 4) / MiB
