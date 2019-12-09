@@ -301,8 +301,8 @@ def subdaily_netcdf(
     var_name: str,
     initial_year: int,
     final_year: int,
-    initial_month: int,
-    final_month: int,
+    initial_month: int = 1,
+    final_month: int = 12,
     merra2_var_dict: Optional[dict] = None,
     verbose: bool = False,
 ):
@@ -315,6 +315,8 @@ def subdaily_netcdf(
     var_name : str
     initial_year : int
     final_year : int
+    initial_month : int
+    final_month : int
     merra2_var_dict : Optional[dict]
         Dictionary containing the following keys:
         esdt_dir, collection, merra_name, standard_name,
@@ -622,7 +624,6 @@ def subdaily_download_and_convert(
     output_dir: Union[str, Path] = None,
     delete_temp_dir: bool = False,
     verbose: bool = False,
-    time_frequency="1hr",
 ):
     """MERRA2 subdaily download and conversion.
 
@@ -649,8 +650,6 @@ def subdaily_download_and_convert(
     output_dir : Union[str, Path]
     delete_temp_dir : bool
     verbose : bool
-    time_frequency : str
-
     """
     if isinstance(output_dir, Path):
         output_dir = Path(output_dir)
@@ -661,6 +660,8 @@ def subdaily_download_and_convert(
     if (2, 7) < sys.version_info < (3, 6):
         output_dir = str(output_dir)
 
+    time_frequency = "1hr"
+
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
     for i, var_name in enumerate(var_names):
         if not merra2_var_dicts:
@@ -668,19 +669,19 @@ def subdaily_download_and_convert(
         else:
             merra2_var_dict = merra2_var_dicts[i]
         # Download subdaily files
-        if i == 0:
-            subdaily_download(
-                merra2_server,
-                merra2_var_dict["esdt_dir"],
-                merra2_var_dict["collection"],
-                initial_year,
-                final_year,
-                initial_month=initial_month,
-                final_month=final_month,
-                initial_day=initial_day,
-                final_day=final_day,
-                output_directory=temp_dir_download,
-            )
+        subdaily_download(
+            merra2_server,
+            merra2_var_dict["esdt_dir"],
+            merra2_var_dict["collection"],
+            initial_year,
+            final_year,
+            initial_month=initial_month,
+            final_month=final_month,
+            initial_day=initial_day,
+            final_day=final_day,
+            output_directory=temp_dir_download,
+        )
+
         # Name the output file
         out_file_name = file_namer(
             var_name,
@@ -692,35 +693,6 @@ def subdaily_download_and_convert(
             initial_day,
             final_day,
         )
-        #
-        # if (initial_year == final_year) and (initial_month == final_month):
-        #     if initial_day == final_day:
-        #         file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}{4}.nc"
-        #         out_file_name = file_name_str.format(
-        #             var_name,
-        #             time_frequency,
-        #             str(initial_year),
-        #             str(initial_month).zfill(2),
-        #             str(initial_day).zfill(2),
-        #         )
-        #     else:
-        #         file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}.nc"
-        #         out_file_name = file_name_str.format(
-        #             var_name,
-        #             time_frequency,
-        #             str(initial_year),
-        #             str(initial_month).zfill(2),
-        #         )
-        # else:
-        #     file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}-{4}{5}.nc"
-        #     out_file_name = file_name_str.format(
-        #         var_name,
-        #         time_frequency,
-        #         str(initial_year),
-        #         str(initial_month).zfill(2),
-        #         str(final_year),
-        #         str(final_month).zfill(2),
-        #     )
         out_file = Path(output_dir).joinpath(out_file_name)
 
         # Extract variable
@@ -730,8 +702,11 @@ def subdaily_download_and_convert(
             var_name,
             initial_year,
             final_year,
+            final_month,
+            final_year,
             verbose=verbose,
         )
+
     if delete_temp_dir:
         shutil.rmtree(temp_dir_download)
 
@@ -1013,6 +988,8 @@ def daily_download_and_convert(
     if (2, 7) < sys.version_info < (3, 6):
         output_dir = str(output_dir)
 
+    time_frequency = "day"
+
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
     for i, var_name in enumerate(var_names):
         if not merra2_var_dicts:
@@ -1020,28 +997,31 @@ def daily_download_and_convert(
         else:
             merra2_var_dict = merra2_var_dicts[i]
         # Download subdaily files
-        if i == 0:
-            subdaily_download(
-                merra2_server,
-                merra2_var_dict["esdt_dir"],
-                merra2_var_dict["collection"],
-                initial_year,
-                final_year,
-                initial_month=initial_month,
-                final_month=final_month,
-                initial_day=initial_day,
-                final_day=final_day,
-                output_directory=temp_dir_download,
-            )
+        subdaily_download(
+            merra2_server,
+            merra2_var_dict["esdt_dir"],
+            merra2_var_dict["collection"],
+            initial_year,
+            final_year,
+            initial_month=initial_month,
+            final_month=final_month,
+            initial_day=initial_day,
+            final_day=final_day,
+            output_directory=temp_dir_download,
+        )
+
         # Name the output file
-        if initial_year == final_year:
-            file_name_str = "{0}_day_merra2_reanalysis_{1}.nc"
-            out_file_name = file_name_str.format(var_name, str(initial_year))
-        else:
-            file_name_str = "{0}_day_merra2_reanalysis_{1}-{2}.nc"
-            out_file_name = file_name_str.format(
-                var_name, str(initial_year), str(final_year)
-            )
+        out_file_name = file_namer(
+            var_name,
+            time_frequency,
+            initial_year,
+            final_year,
+            initial_month,
+            final_month,
+            initial_day,
+            final_day,
+        )
+
         out_file = Path(output_dir).joinpath(out_file_name)
         # Extract variable
         daily_netcdf(
