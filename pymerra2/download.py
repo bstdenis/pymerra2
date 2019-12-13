@@ -613,7 +613,7 @@ def file_namer(
 
 def subdaily_download_and_convert(
     merra2_server: str,
-    var_names: List[str],
+    var_names: Union[str, List[str]],
     initial_year: int,
     final_year: int,
     initial_month: int = 1,
@@ -624,6 +624,7 @@ def subdaily_download_and_convert(
     output_dir: Union[str, Path] = None,
     delete_temp_dir: bool = False,
     verbose: bool = False,
+    time_frequency: str = "1hr"
 ):
     """MERRA2 subdaily download and conversion.
 
@@ -632,7 +633,7 @@ def subdaily_download_and_convert(
     merra2_server : str
         Must contain trailing slash.
         e.g. https://goldsmr4.gesdisc.eosdis.nasa.gov/data/
-    var_names : List[str]
+    var_names : Union[str, List[str]]
         Variable short names, must be defined in pymerra2_variables.py
         if merra2_var_dict is not provided. If more than one variable,
         they are assumed to have the same original files and those will only
@@ -650,6 +651,7 @@ def subdaily_download_and_convert(
     output_dir : Union[str, Path]
     delete_temp_dir : bool
     verbose : bool
+    time_frequency: str
     """
     if isinstance(output_dir, Path):
         output_dir = Path(output_dir)
@@ -660,7 +662,8 @@ def subdaily_download_and_convert(
     if (2, 7) < sys.version_info < (3, 6):
         output_dir = str(output_dir)
 
-    time_frequency = "1hr"
+    if isinstance(var_names, str):
+        var_names = [var_names]
 
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
     for i, var_name in enumerate(var_names):
@@ -936,7 +939,7 @@ def daily_netcdf(
 
 def daily_download_and_convert(
     merra2_server: str,
-    var_names: List[str],
+    var_names: Union[str, List[str]],
     initial_year: int,
     final_year: int,
     initial_month: int = 1,
@@ -955,7 +958,7 @@ def daily_download_and_convert(
     merra2_server : str
         Must contain trailing slash.
         e.g. https://goldsmr4.gesdisc.eosdis.nasa.gov/data/
-    var_names : List[str]
+    var_names : Union[str, List[str]]
         Variable short names, must be defined in pymerra2_variables.py
         if merra2_var_dict is not provided. If more than one variable,
         they are assumed to have the same original files and those will only
@@ -989,6 +992,9 @@ def daily_download_and_convert(
         output_dir = str(output_dir)
 
     time_frequency = "day"
+
+    if isinstance(var_names, str):
+        var_names = [var_names]
 
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
     for i, var_name in enumerate(var_names):

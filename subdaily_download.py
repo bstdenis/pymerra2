@@ -7,9 +7,11 @@ from pymerra2 import download
 # These variables names are user choices, their merra-2 equivalent are
 # specified below or in the default pymerra2_variables.py
 var_names = ["evspsbl", "huss", "prbc", "tas", "sic", "snw", "uas", "vas", "ps"]
+var_names = ["hur"]
 delete_temp_dir = False
 download_dir = Path.cwd().joinpath("downloaded")
 merra2_server = "https://goldsmr4.gesdisc.eosdis.nasa.gov/data/"
+merra2_server = "https://goldsmr5.gesdisc.eosdis.nasa.gov/data/"
 
 # The variables specification is in the same order as var_names above.
 # esdt_dir, collection and merra_name can be found from
