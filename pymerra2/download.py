@@ -2,6 +2,7 @@ import datetime
 import shutil
 import subprocess
 import sys
+import glob
 import tempfile
 from calendar import monthrange
 from pathlib import Path
@@ -84,6 +85,13 @@ def _datetimes_to_time_vectors(
     except (AttributeError, TypeError):
         time_tuples = datetimes.timetuple()
         return _time_vectors_int(ma.array(time_tuples))
+
+
+def get_nc_attr(nc, name, default=None):
+    try:
+        return nc.getncattr(name)
+    except AttributeError:
+        return default
 
 
 def fixed_netcdf(
@@ -342,7 +350,12 @@ def subdaily_netcdf(
     for nc_file in nc_files:
         yyyy = int(nc_file.split(".")[-2][0:4])
         mm = int(nc_file.split(".")[-2][4:6])
-        if (yyyy >= initial_year) and (yyyy <= final_year) and (mm >= initial_month) and (mm <= final_month):
+        if (
+            (yyyy >= initial_year)
+            and (yyyy <= final_year)
+            and (mm >= initial_month)
+            and (mm <= final_month)
+        ):
             relevant_files.append(nc_file)
             nc = netCDF4.Dataset(nc_file, "r")
             ncvar = nc.variables[merra2_var_dict["merra_name"]]
@@ -624,7 +637,7 @@ def subdaily_download_and_convert(
     output_dir: Union[str, Path] = None,
     delete_temp_dir: bool = False,
     verbose: bool = False,
-    time_frequency: str = "1hr"
+    time_frequency: str = "1hr",
 ):
     """MERRA2 subdaily download and conversion.
 
@@ -715,11 +728,12 @@ def subdaily_download_and_convert(
 
 
 def daily_netcdf(
-    path_data: Union[str, Path],
+    path_data: Union[str, Path, List[str]],
     output_file: Union[str, Path],
     var_name: str,
     initial_year: int,
     final_year: int,
+    time_from_filename: bool = False,
     merra2_var_dict: Optional[dict] = None,
     verbose: bool = False,
 ):
@@ -745,14 +759,17 @@ def daily_netcdf(
     perhaps not an ideal separation as this is duplicated code...
 
     """
-    if not isinstance(path_data, Path):
-        path_data = Path(path_data)
+    if isinstance(path_data, list):
+        nc_files = path_data
+    else:
+        if not isinstance(path_data, Path):
+            path_data = Path(path_data)
 
-    if not merra2_var_dict:
-        merra2_var_dict = var_list[var_name]
+        if not merra2_var_dict:
+            merra2_var_dict = var_list[var_name]
 
-    search_str = "*{0}*.nc4".format(merra2_var_dict["collection"])
-    nc_files = [str(f) for f in path_data.rglob(search_str)]
+        search_str = "*{0}*.nc4".format(merra2_var_dict["collection"])
+        nc_files = [str(f) for f in path_data.rglob(search_str)]
     nc_files.sort()
 
     relevant_files = []
@@ -791,8 +808,9 @@ def daily_netcdf(
     nc1.Conventions = "CF-1.7"
 
     # 2.6.2. Description of file contents
-    nc1.title = (
-        "Modern-Era Retrospective analysis for Research and " "Applications, Version 2"
+    nc1.title = merra2_var_dict.get(
+        "Title",
+        "Modern-Era Retrospective analysis for Research and Applications, Version 2",
     )
     if (len(divided_files) == 1) and (len(divided_files[0]) == 1):
         nc1.history = (
@@ -805,9 +823,26 @@ def daily_netcdf(
             "Extract variable & "
             "Merge in time."
         ).format(nc_reference.History, now, __version__)
-    nc1.institution = nc_reference.Institution
-    nc1.source = "Reanalysis"
-    nc1.references = nc_reference.References
+
+    nc1.institution = get_nc_attr(
+        nc_reference,
+        "Institution",
+        get_nc_attr(
+            nc_reference,
+            "Center",
+            merra2_var_dict.get(
+                "Institution", "NASA Global Modeling and Assimilation Office"
+            ),
+        ),
+    )
+    nc1.source = get_nc_attr(
+        nc_reference, "Source", merra2_var_dict.get("Source", "Reanalysis")
+    )
+    nc1.references = get_nc_attr(
+        nc_reference,
+        "References",
+        merra2_var_dict.get("References", "http://gmao.gsfc.nasa.gov"),
+    )
 
     # Using lower case c for conventions because lower() is used below...
     attr_overwrite = ["conventions", "title", "institution", "source", "references"]
@@ -920,8 +955,18 @@ def daily_netcdf(
                 print(nc_file)
             nc = netCDF4.Dataset(nc_file, "r")
             ncvar = nc.variables[merra2_var_dict["merra_name"]]
-            nctime = nc.variables["time"]
-            ncdatetime = netCDF4.num2date(nctime[:], nctime.units)
+            if time_from_filename:
+                dt_str = nc_file.split(".")[-2]
+                if len(dt_str) == 6:
+                    dt_str += "01"
+                ncdatetime = [
+                    datetime.datetime(
+                        int(dt_str[:4]), int(dt_str[4:6]), int(dt_str[6:])
+                    )
+                ]
+            else:
+                nctime = nc.variables["time"]
+                ncdatetime = netCDF4.num2date(nctime[:], nctime.units)
             nctime_1980 = np.round(netCDF4.date2num(ncdatetime, time.units))
             tmp_data[ttmp : ttmp + ncvar.shape[0], :, :] = ncvar[:, :, :]
             tmp_time[ttmp : ttmp + ncvar.shape[0]] = nctime_1980[:]
@@ -1040,3 +1085,129 @@ def daily_download_and_convert(
         )
     if delete_temp_dir:
         shutil.rmtree(temp_dir_download)
+
+
+def _date_range_gen(
+    init: datetime.datetime, end: datetime.datetime, freq: str = "daily"
+):
+    for year in range(init.year, end.year + 1):
+        for month in range(
+            init.month if year == init.year else 1,
+            end.month + 1 if year == end.year else 13,
+        ):
+            if freq == "daily":
+                init_day = (
+                    init.day if (year == init.year) and (month == init.month) else 1
+                )
+                end_day = (
+                    end.day
+                    if (year == end.year) and (month == end.month)
+                    else monthrange(year, month)[1]
+                )
+                for day in range(init_day, end_day + 1):
+                    yield "{yyyy}{mm:02d}{dd:02d}".format(
+                        yyyy=year, mm=month, dd=day
+                    ), year
+            elif freq == "monthly":
+                yield "{yyyy}{mm:02d}".format(yyyy=year, mm=month), year
+
+
+def download_from_url(
+    url_template: str,
+    var_name: str,
+    freq: str,
+    initial_year: int,
+    final_year: int,
+    initial_month: int = 1,
+    final_month: int = 12,
+    initial_day: int = 1,
+    final_day: Optional[int] = None,
+    output_dir: Union[str, Path] = None,
+    delete_temp_dir: bool = True,
+    merra2_names_map: Optional[dict] = None,
+    verbose: bool = True,
+    **kwargs
+):
+    if isinstance(output_dir, Path):
+        output_dir = Path(output_dir)
+    if output_dir is None:
+        output_dir = Path.cwd()
+
+    if (2, 7) < sys.version_info < (3, 6):
+        output_dir = str(output_dir)
+
+    init_date = datetime.datetime.fromisoformat(
+        initial_year, initial_month, initial_day
+    )
+    end_date = datetime.datetime.fromisoformat(
+        final_year, final_month, final_day or monthrange(initial_year, initial_month)[1]
+    )
+    temp_dir_download = tempfile.mkdtemp(dir=output_dir)
+
+    for date, year in _date_range_gen(init_date, end_date, freq=freq):
+        subprocess.call(
+            [
+                "wget",
+                "-c",
+                "--directory-prefix={0}".format(temp_dir_download),
+                "--load-cookies",
+                str(Path("~/.urs_cookies").expanduser()),
+                "--save-cookies",
+                str(Path("~/.urs_cookies").expanduser()),
+                "--keep-session-cookies",
+                url_template.format(date=date, year=year, freq=freq, **kwargs),
+            ]
+        )
+
+    nc_files = glob.glob(str(Path(temp_dir_download) / "*.nc"))
+    nc_reference = netCDF4.Dataset(nc_files[0], "r")
+
+    merra2_names_map = merra2_names_map or {}
+    var_names = []
+    merra2_var_dicts = []
+    for var_name, variable in nc_reference.variables.items():
+        if (merra2_names_map and var_name in merra2_names_map) or (
+            var_name not in ["lat", "lon", "time"]
+        ):
+            var_names.append(merra2_names_map.get(var_name, var_name))
+            merra2_var_dicts.append(
+                dict(
+                    merra_name=var_name,
+                    standard_name=merra2_names_map.get(var_name, var_name),
+                    **kwargs
+                )
+            )
+
+    try:
+        netCDF4.num2date(nc_reference["time"][:], nc_reference["time"].units)
+    except ValueError:
+        time_from_filename = True
+    else:
+        time_from_filename = False
+
+    nc_reference.close()
+
+    for var_name, merra2_var_dict in zip(var_names, merra2_var_dicts):
+        out_file_name = file_namer(
+            var_name,
+            "day" if freq == "daily" else "month",
+            initial_year,
+            final_year,
+            initial_month,
+            final_month,
+            initial_day,
+            final_day,
+        )
+        out_file = Path(output_dir).joinpath(out_file_name)
+
+        daily_netcdf(
+            nc_files,
+            output_file=out_file,
+            var_name=var_name,
+            initial_year=initial_year,
+            final_year=final_year,
+            merra2_var_dict=merra2_var_dict,
+            time_from_filename=time_from_filename,
+            verbose=verbose,
+        )
+    return temp_dir_download, out_file
