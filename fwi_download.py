@@ -18,28 +18,24 @@ freq_str = "Daily"
 output_dir = None
 
 for yyyy in range(2017, 2019):
-    for mm in range(1, 13):
-        download.download_from_url(
-            url_template=url_template,
-            freq=freq_str.casefold(),
-            initial_year=yyyy,
-            final_year=yyyy,
-            initial_month=mm,
-            final_month=mm,
-            initial_day=1,
-            output_dir="/home/pbourgault/Documents/",
-            delete_temp_dir=True,
-            merra2_names_map={
-                "{0}_{1}".format(prcp_source, ind): ind
-                for ind in ["DC", "DMC", "FFMC", "ISI", "BUI", "FWI", "DSR"]
-            },
-            verbose=True,
-            # All below are kwargs for the url_template or the final attrs
-            data_source=data_source,
-            freq_str=freq_str,
-            prcp_source=prcp_source,
-            Source="GFWED",
-            Title="Global Fire WEather Database",
-            References="https://data.giss.nasa.gov/impacts/gfwed",
-            cell_methods="",
-        )
+    download.download_from_url(
+        url_template=url_template,
+        freq=freq_str.casefold(),
+        initial_year=yyyy,
+        final_year=yyyy,
+        output_dir="/home/pbourgault/Documents/",
+        delete_temp_dir=True,
+        merra2_names_map={
+            "{0}_{1}".format(prcp_source, ind): ind
+            for ind in ["DC", "DMC", "FFMC", "ISI", "BUI", "FWI", "DSR"]
+        },
+        verbose=True,
+        # All below are kwargs for the url_template or the final attrs
+        data_source=data_source,
+        freq_str=freq_str,
+        prcp_source=prcp_source,
+        Source="GFWED",
+        Title="Global Fire WEather Database",
+        References="https://data.giss.nasa.gov/impacts/gfwed",
+        cell_methods="",
+    )

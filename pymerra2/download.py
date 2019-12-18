@@ -755,7 +755,7 @@ def daily_netcdf(
         esdt_dir, collection, merra_name, standard_name,
         see the Bosilovich paper for details.
         May also contain the following netCDF attributes:
-        Title, Institution, Referece, Source
+        Title, Institution, Reference, Source
     verbose : bool
 
     Notes
@@ -1160,7 +1160,7 @@ def download_from_url(
         Whether to delete the temporary download directory or not.
     verbose : bool,
         Whether to print statuses to the screen, or not.
-    
+
     All other kwargs are passed to the url formatting and to the merging function.
     In the latter, they might be attributes missing in the files restricted to:
         Title, Institution, Source, Reference
@@ -1178,12 +1178,9 @@ def download_from_url(
     if (2, 7) < sys.version_info < (3, 6):
         output_dir = str(output_dir)
 
-    init_date = datetime.datetime.fromisoformat(
-        initial_year, initial_month, initial_day
-    )
-    end_date = datetime.datetime.fromisoformat(
-        final_year, final_month, final_day or monthrange(initial_year, initial_month)[1]
-    )
+    init_date = datetime.datetime(initial_year, initial_month, initial_day)
+    end_date = datetime.datetime(final_year, final_month, final_day or monthrange(initial_year, initial_month)[1])
+
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
 
     for date, year in _date_range_gen(init_date, end_date, freq=freq):
