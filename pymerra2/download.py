@@ -88,6 +88,7 @@ def _datetimes_to_time_vectors(
 
 
 def get_nc_attr(nc, name, default=None):
+    """Non-error raising netCDF attribut getter"""
     try:
         return nc.getncattr(name)
     except AttributeError:
@@ -741,15 +742,20 @@ def daily_netcdf(
 
     Parameters
     ----------
-    path_data : Union[str, Path]
+    path_data : Union[str, Path, List[str]]
+        If path_data is a list, skips the glob search.
     output_file : Union[str, Path]
     var_name : str
     initial_year : int
     final_year : int
+    time_from_filename : bool
+        Whether to take the timestamp from the file or not.
     merra2_var_dict : Optional[dict]
         Dictionary containing the following keys:
         esdt_dir, collection, merra_name, standard_name,
         see the Bosilovich paper for details.
+        May also contain the following netCDF attributes:
+        Title, Institution, Referece, Source
     verbose : bool
 
     Notes
@@ -1090,6 +1096,9 @@ def daily_download_and_convert(
 def _date_range_gen(
     init: datetime.datetime, end: datetime.datetime, freq: str = "daily"
 ):
+    """Generator yielding dates (formatted as "YYYYMM[DD]"") and years in a range
+    Iterates over days if freq=='daily', over months otherwise.
+    """
     for year in range(init.year, end.year + 1):
         for month in range(
             init.month if year == init.year else 1,
@@ -1114,7 +1123,6 @@ def _date_range_gen(
 
 def download_from_url(
     url_template: str,
-    var_name: str,
     freq: str,
     initial_year: int,
     final_year: int,
@@ -1122,12 +1130,46 @@ def download_from_url(
     final_month: int = 12,
     initial_day: int = 1,
     final_day: Optional[int] = None,
+    merra2_names_map: Optional[dict] = None,
     output_dir: Union[str, Path] = None,
     delete_temp_dir: bool = True,
-    merra2_names_map: Optional[dict] = None,
     verbose: bool = True,
     **kwargs
 ):
+    """Download netCDF files from urls and merges them.
+
+    This is for datasets that are outside of the raw merra2 output, but still related
+    and similarly built.
+
+    Arguments
+    ---------
+    url_template : str,
+        A string template for the download urls. Will be formatted with:
+            date : a YYYYMM[DD] str, year (int), freq (same as below)
+            and all kwargs (below)
+    freq : str,
+        Either "daily" or "monthly", frequency of the files.
+    [initial/final]_[year/month/day]: int,
+        The range to download. final_day defaults to the end of the month.
+    merra2_names_map: Optional[dict],
+        A mapping between names in the download files and names in the saved file.
+        If given, restricts the merged file to those names.
+    output_dir : Union[str, Path],
+        The temporary directory and he final files will be put there.
+    delete_temp_dir: bool,
+        Whether to delete the temporary download directory or not.
+    verbose : bool,
+        Whether to print statuses to the screen, or not.
+    
+    All other kwargs are passed to the url formatting and to the merging function.
+    In the latter, they might be attributes missing in the files restricted to:
+        Title, Institution, Source, Reference
+
+    Returns
+    -------
+    List[Path]
+    A list of the Paths of all netCDF files generated.
+    """
     if isinstance(output_dir, Path):
         output_dir = Path(output_dir)
     if output_dir is None:
@@ -1187,6 +1229,7 @@ def download_from_url(
 
     nc_reference.close()
 
+    out_files = []
     for var_name, merra2_var_dict in zip(var_names, merra2_var_dicts):
         out_file_name = file_namer(
             var_name,
@@ -1199,6 +1242,7 @@ def download_from_url(
             final_day,
         )
         out_file = Path(output_dir).joinpath(out_file_name)
+        out_files.append(out_file)
 
         daily_netcdf(
             nc_files,
@@ -1210,4 +1254,8 @@ def download_from_url(
             time_from_filename=time_from_filename,
             verbose=verbose,
         )
-    return temp_dir_download, out_file
+
+    if delete_temp_dir:
+        shutil.rmtree(temp_dir_download)
+
+    return out_files

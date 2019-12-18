@@ -21,7 +21,6 @@ for yyyy in range(2017, 2019):
     for mm in range(1, 13):
         download.download_from_url(
             url_template=url_template,
-            var_name="FWI",
             freq=freq_str.casefold(),
             initial_year=yyyy,
             final_year=yyyy,
