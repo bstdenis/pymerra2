@@ -139,6 +139,13 @@ var_list = {
         "standard_name": "sea_ice_area_fraction",
         "cell_methods": "time: mean",
     },
+    "snd": {
+        "esdt_dir": "M2T1NXLND.5.12.4",
+        "collection": "tavg1_2d_lnd_Nx",
+        "merra_name": "SNODP",
+        "standard_name": "surface_snow_thickness",
+        "cell_methods": "time: mean",
+    },
     "snw": {
         "esdt_dir": "M2T1NXLND.5.12.4",
         "collection": "tavg1_2d_lnd_Nx",

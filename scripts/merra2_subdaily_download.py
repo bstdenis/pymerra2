@@ -43,28 +43,3 @@ for yyyy in range(2017, 2019):
             msg = "{}: File not found".format(e)
             logging.error(msg)
             continue
-
-# for v in var_names:
-#     for yyyy in range(2017, 2019):
-#         for mm in range(1, 13):
-#
-#             out_file_name = download.file_namer(v, time_frequency, yyyy, yyyy, mm, mm,)
-#             try:
-#
-#                 download.subdaily_netcdf(
-#                     path_data=download_dir,
-#                     output_file=out_file_name,
-#                     var_name=v,
-#                     initial_year=yyyy,
-#                     final_year=yyyy,
-#                     initial_month=mm,
-#                     final_month=mm,
-#                     merra2_var_dict=None,
-#                     verbose=False,
-#                 )
-#
-#             except Exception as e:
-#                 msg = "{}: File not found".format(e)
-#                 logging.error(msg)
-#                 continue
-

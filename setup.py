@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 about = dict(
-    __version__=0.3,
+    __version__=0.4,
     __title__="pymerra2",
     __description__="A tool for downloading and repackaging NASA MERRA-2 Data",
     __url__="https://github.com/Ouranosinc/pymerra2",
