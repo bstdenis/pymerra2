@@ -513,11 +513,7 @@ def subdaily_netcdf(
         least_significant_digit=least_digit,
     )
     # 3.1. Units
-    # Force kg kg-1 to 1
-    if var_ref.units == "kg kg-1":
-        var1.units = "1"
-    else:
-        var1.units = var_ref.units
+    var1.units = var_ref.units
     # 3.2. Long Name
     var1.long_name = var_ref.long_name
     # 3.3. Standard Name
