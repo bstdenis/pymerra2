@@ -1016,6 +1016,7 @@ def daily_download_and_convert(
     final_month : int
     initial_day : int
     final_day : Optional[int]
+        The range to download. final_day defaults to the end of the month.
     merra2_var_dicts : Optional[List[dict]]
         Dictionary containing the following keys:
         esdt_dir, collection, merra_name, standard_name,
@@ -1130,41 +1131,49 @@ def download_from_url(
     output_dir: Union[str, Path] = None,
     delete_temp_dir: bool = True,
     verbose: bool = True,
-    **kwargs
+    **kwargs,
 ):
     """Download netCDF files from urls and merges them.
 
     This is for datasets that are outside of the raw merra2 output, but still related
     and similarly built.
 
-    Arguments
-    ---------
-    url_template : str,
+    Parameters
+    ----------
+    url_template : str
         A string template for the download urls. Will be formatted with:
             date : a YYYYMM[DD] str, year (int), freq (same as below)
             and all kwargs (below)
-    freq : str,
+    freq : str
         Either "daily" or "monthly", frequency of the files.
-    [initial/final]_[year/month/day]: int,
+    initial_year : int
+    final_year : int
+    initial_month : int
+    final_month : int
+    initial_day : int
+    final_day : Optional[int]
         The range to download. final_day defaults to the end of the month.
-    merra2_names_map: Optional[dict],
+    merra2_names_map: Optional[dict]
         A mapping between names in the download files and names in the saved file.
         If given, restricts the merged file to those names.
-    output_dir : Union[str, Path],
+    output_dir : Union[str, Path]
         The temporary directory and he final files will be put there.
-    delete_temp_dir: bool,
+    delete_temp_dir: bool
         Whether to delete the temporary download directory or not.
-    verbose : bool,
+    verbose : bool
         Whether to print statuses to the screen, or not.
 
+    Notes
+    -----
     All other kwargs are passed to the url formatting and to the merging function.
     In the latter, they might be attributes missing in the files restricted to:
+
         Title, Institution, Source, Reference
 
     Returns
     -------
     List[Path]
-    A list of the Paths of all netCDF files generated.
+        A list of the Paths of all netCDF files generated.
     """
     if isinstance(output_dir, Path):
         output_dir = Path(output_dir)
@@ -1175,7 +1184,9 @@ def download_from_url(
         output_dir = str(output_dir)
 
     init_date = datetime.datetime(initial_year, initial_month, initial_day)
-    end_date = datetime.datetime(final_year, final_month, final_day or monthrange(initial_year, initial_month)[1])
+    end_date = datetime.datetime(
+        final_year, final_month, final_day or monthrange(initial_year, initial_month)[1]
+    )
 
     temp_dir_download = tempfile.mkdtemp(dir=output_dir)
 
@@ -1209,7 +1220,7 @@ def download_from_url(
                 dict(
                     merra_name=var_name,
                     standard_name=merra2_names_map.get(var_name, var_name),
-                    **kwargs
+                    **kwargs,
                 )
             )
 
