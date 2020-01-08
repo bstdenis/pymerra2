@@ -6,8 +6,10 @@ download_dir = Path.cwd().joinpath("downloaded")
 # Download Fire Weather indices from the public https NCCS portal.
 # Filenames and path are quite different than the MERRA2 products, thus the different file.
 
-url_template = "https://portal.nccs.nasa.gov/datashare/GlobalFWI/v2.0/fwiCalcs.{data_source}/Default/{prcp_source}/" \
-               "{year:04d}/FWI.{prcp_source}.{freq_str}.Default.{date}.nc "
+url_template = (
+    "https://portal.nccs.nasa.gov/datashare/GlobalFWI/v2.0/fwiCalcs.{data_source}/Default/{prcp_source}/"
+    "{year:04d}/FWI.{prcp_source}.{freq_str}.Default.{date}.nc "
+)
 
 # Source of tas, rh, ws and snowdepth, either "MERRA2" or "GEOS-5"
 data_source = "MERRA2"

@@ -602,10 +602,7 @@ def file_namer(
         else:
             file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}.nc"
             out_file_name = file_name_str.format(
-                var_name,
-                time_frequency,
-                str(initial_year),
-                str(initial_month).zfill(2),
+                var_name, time_frequency, str(initial_year), str(initial_month).zfill(2)
             )
     else:
         file_name_str = "{0}_{1}_merra2_reanalysis_{2}{3}-{4}{5}.nc"
@@ -1131,7 +1128,7 @@ def download_from_url(
     output_dir: Union[str, Path] = None,
     delete_temp_dir: bool = True,
     verbose: bool = True,
-    **kwargs,
+    **kwargs
 ):
     """Download netCDF files from urls and merges them.
 
